@@ -2,7 +2,7 @@
 <h1>README</h1>
 
 ## Lycan
-.. image:: https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg
+![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
 
 Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
 The current implementation is based on the 1.0.0 Release Cadidate 4 documentation. 
