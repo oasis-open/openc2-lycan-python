@@ -30,7 +30,7 @@
 """
 
 import six, json
-from lycan.message import OpenC2Command,OpenC2Response
+from lycan.message import OpenC2Command, OpenC2Response
 
 
 class OpenC2MessageEncoder(json.JSONEncoder):
@@ -38,17 +38,17 @@ class OpenC2MessageEncoder(json.JSONEncoder):
         message = {}
         if isinstance(obj, OpenC2Command):
             message["action"] = obj.action
-            message["target"] = { "type": str(obj.target) }
-            for (k,v) in six.iteritems(obj.target.specifiers):
+            message["target"] = {"type": str(obj.target)}
+            for (k, v) in six.iteritems(obj.target.specifiers):
                 message["target"][k] = v
             if obj.actuator:
-                message["actuator"] = { "type": str(obj.actuator) }
-                for (k,v) in six.iteritems(obj.actuator.specifiers):
+                message["actuator"] = {"type": str(obj.actuator)}
+                for (k, v) in six.iteritems(obj.actuator.specifiers):
                     message["actuator"][k] = v
             if obj.modifiers:
                 message["modifiers"] = obj.modifiers
         elif isinstance(obj, OpenC2Response):
-            message["response"] = { "source": { "type": obj.source } }
+            message["response"] = {"source": { "type": obj.source }}
             message["status"] = obj.status
             message["results"] = obj.results
             if obj.cmdref:
@@ -66,18 +66,18 @@ class OpenC2MessageDecoder(json.JSONDecoder):
     def object_hook(self, obj):
         message = obj
         if "action" in obj:
-            if not "target" in obj:
+            if "target" not in obj:
                 raise ValueError("Invalid OpenC2 command: target required")
             message = OpenC2Command(obj["action"], obj["target"], obj["actuator"] if "actuator" in obj else None,
-                                       obj["modifiers"] if "modifiers" in obj else {})
+                                    obj["modifiers"] if "modifiers" in obj else {})
         elif "response" in obj:
             if "source" in obj["response"]:
-                if not "status" in obj:
+                if "status" not in obj:
                     raise ValueError("Invalid OpenC2 response: status required")
-                if not "results" in obj:
+                if "results" not in obj:
                     raise ValueError("Invalid OpenC2 response: results required")
-                message = OpenC2Response(obj["response"]["source"], obj["status"], obj["results"], obj["cmdref"] if "cmdref" in obj else None,
-                                       obj["status_text"] if "status_text" in obj else None)
+                message = OpenC2Response(obj["response"]["source"], obj["status"], obj["results"], 
+                                         obj["cmdref"] if "cmdref" in obj else None, obj["status_text"] if "status_text" in obj else None)
             else:
                 raise ValueError("Invalid OpenC2 response: source required")
         return message

@@ -39,7 +39,7 @@ class OpenC2Message(object):
 class AttributeDict(dict):
     """Support accessing dictionary elements as attributes"""
     def __getattr__(self, k):
-        if not k in self:
+        if k not in self:
             return None
         return self[k]
     def __setattr__(self, k, v):
@@ -63,7 +63,7 @@ class OpenC2CommandField(object):
     """
     def __init__(self, _type):
         if isinstance(_type, dict):
-            if not 'type' in _type:
+            if 'type' not in _type:
                 raise ValueError("Invalid OpenC2 field: type required")
             self._type = _type.pop('type')
             self._specifiers = AttributeDict(_type)
@@ -75,10 +75,10 @@ class OpenC2CommandField(object):
 
         self._type = self.get_datamodel(self._type)
 
-    def get_datamodel(self,_type):
+    def get_datamodel(self, _type):
         """Build fully-qualified datamodel"""
         try:
-            datamodel,_ = _type.split(':')
+            datamodel, _ = _type.split(':')
         except ValueError:
             return 'openc2:' + _type
         else:
@@ -134,10 +134,10 @@ class OpenC2Response(OpenC2Message):
         status (str): Request status
         results (str): Result string
         cmdref (str, optional): Command reference
-        status_text (str, optional): Free-form description 
+        status_text (str, optional): Free-form description
     """
     def __init__(self, source, status, results,
-                        cmdref=None, status_text=None):
+                 cmdref=None, status_text=None):
         super(OpenC2Response, self).__init__()
         self.source = source
         self.status = status
