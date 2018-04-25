@@ -1,6 +1,33 @@
 <div>
 <h1>README</h1>
 
+## Lycan
+.. image:: https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg
+
+Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
+The current implementation is based on the 1.0.0 Release Cadidate 4 documentation. 
+
+## Usage
+
+```python
+import uuid, json
+import lycan.datamodels as openc2
+from lycan.message import OpenC2Command,OpenC2Response
+from lycan.serializations import OpenC2MessageEncoder,OpenC2MessageDecoder
+
+# encode
+cmd = OpenC2Command(action=openc2.DENY, target=openc2.IPV4_ADDR)
+cmd.target.value = '1.2.3.4'
+cmd.modifiers.command_id = str(uuid.uuid4())
+msg = json.dumps(cmd, cls=OpenC2MessageEncoder)
+
+# decode
+cmd = json.loads(msg, cls=OpenC2MessageDecoder)
+if cmd.action == openc2.DENY and cmd.target == openc2.IPV4_ADDR:
+    ip = cmd.target.value
+    command_id = cmd.modifiers.command_id
+```
+
 <div>
 <h2><a id="readme-general">OASIS TC Open Repository: openc2-lycan-python</a></h2>
 
