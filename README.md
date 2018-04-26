@@ -1,5 +1,4 @@
-<div>
-<h1>Lycan</h1>
+# Lycan
 ![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
 
 Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
@@ -86,4 +85,4 @@ if cmd.action == openc2.DENY and cmd.target == openc2.IPV4_ADDR:
 
 <p>Questions or comments about this TC Open Repository's activities should be composed as GitHub issues or comments. If use of an issue/comment is not possible or appropriate, questions may be directed by email to the Maintainer(s) <a href="#currentMaintainers">listed above</a>.  Please send general questions about TC Open Repository participation to OASIS Staff at <a href="mailto:repository-admin@oasis-open.org">repository-admin@oasis-open.org</a> and any specific CLA-related questions to <a href="mailto:repository-cla@oasis-open.org">repository-cla@oasis-open.org</a>.</p>
 
-</div></div>
+</div>
