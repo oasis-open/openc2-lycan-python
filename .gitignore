@@ -2,3 +2,4 @@
 build
 .coverage
 .coveragerc
+lycan.egg-info

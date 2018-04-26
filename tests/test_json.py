@@ -42,14 +42,14 @@ class TestJson(unittest.TestCase):
                    'value': '1.2.3.4'
                },
                'actuator': {
-                   'type' : 'openc2:firewall',
+                   'type' : 'openc2:network-firewall',
                    'where': 'perimeter',
                },
                'modifiers': {
                    'foo': 'bar'
                }
         }
-        cmd = OpenC2Command(action=openc2.LOCATE, target=openc2.IPV4_ADDR, actuator='firewall')
+        cmd = OpenC2Command(action=openc2.LOCATE, target=openc2.IPV4_ADDR, actuator=openc2.NETWORK_FIREWALL)
         cmd.target.value = '1.2.3.4'
         cmd.actuator.where = 'perimeter'
         cmd.modifiers.foo = 'bar'
@@ -57,13 +57,13 @@ class TestJson(unittest.TestCase):
         self.assertEqual(msg, OpenC2MessageEncoder().encode(_msg))
     def test_command_decode(self):
         _msg = {
-               'action':'deny',
+               'action': 'deny',
 					'target': {
                    'type' : 'ipv4-addr',
                    'value': '1.2.3.4'
                },
                'actuator': {
-                   'type': 'firewall'
+                   'type': 'network-firewall'
                },
                'modifiers': {
                    'foo': 'bar'
@@ -81,40 +81,40 @@ class TestJson(unittest.TestCase):
         _msg = {
                'response': {
                    'source': {
-                       'type': 'firewall'
+                       'type': 'openc2:network-firewall'
                    }
                },
                'status':'200',
                'results':'passed',
-               'cmdref':1,
+               'cmdref':'1',
                'status_text':'foo'
         }
-        x = OpenC2Response('firewall', '200', 'passed', 1, 'foo')
+        x = OpenC2Response(openc2.NETWORK_FIREWALL, '200', 'passed', '1', 'foo')
         msg = OpenC2MessageEncoder().encode(x)
         self.assertEqual(msg, OpenC2MessageEncoder().encode(_msg))
     def test_response_decode(self):
         _msg = {
                'response': {
                    'source': {
-                       'type': 'firewall'
+                       'type': 'network-firewall'
                    }
                },
                'status':'200',
                'results':'passed',
-               'cmdref':1,
+               'cmdref':'1',
                'status_text':'foo'
         }
         response = OpenC2MessageDecoder().decode(json.dumps(_msg))
-        self.assertEqual(response.source['type'], 'firewall')
+        self.assertEqual(response.source, 'openc2:network-firewall')
     def test_response_decode_invalid(self):
         _msg = {
                'response': {
                    'source': {
-                       'type': 'firewall'
+                       'type': 'network-firewall'
                    }
                },
                'results':'passed',
-               'cmdref':1,
+               'cmdref':'1',
                'status_text':'foo'
         }
         cmd = OpenC2MessageDecoder()
@@ -122,11 +122,11 @@ class TestJson(unittest.TestCase):
         _msg = {
                'response': {
                    'source': {
-                       'type': 'firewall'
+                       'type': 'network-firewall'
                    }
                },
                'status':'200',
-               'cmdref':1,
+               'cmdref':'1',
                'status_text':'foo',
         }
         cmd = OpenC2MessageDecoder()
@@ -135,7 +135,7 @@ class TestJson(unittest.TestCase):
                'response': {
                },
                'status':'200',
-               'cmdref':1,
+               'cmdref':'1',
                'status_text':'foo',
         }
         cmd = OpenC2MessageDecoder()

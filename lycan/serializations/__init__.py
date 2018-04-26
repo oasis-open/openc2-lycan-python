@@ -48,7 +48,7 @@ class OpenC2MessageEncoder(json.JSONEncoder):
             if obj.modifiers:
                 message["modifiers"] = obj.modifiers
         elif isinstance(obj, OpenC2Response):
-            message["response"] = {"source": { "type": obj.source }}
+            message["response"] = {"source": {"type": str(obj.source)}}
             message["status"] = obj.status
             message["results"] = obj.results
             if obj.cmdref:
@@ -68,16 +68,20 @@ class OpenC2MessageDecoder(json.JSONDecoder):
         if "action" in obj:
             if "target" not in obj:
                 raise ValueError("Invalid OpenC2 command: target required")
-            message = OpenC2Command(obj["action"], obj["target"], obj["actuator"] if "actuator" in obj else None,
+            message = OpenC2Command(obj["action"], obj["target"],
+                                    obj["actuator"] if "actuator" in obj else None,
                                     obj["modifiers"] if "modifiers" in obj else {})
         elif "response" in obj:
             if "source" in obj["response"]:
+                if "type" not in obj["response"]["source"]:
+                    raise ValueError("Invalid OpenC2 response source: type required")
                 if "status" not in obj:
                     raise ValueError("Invalid OpenC2 response: status required")
                 if "results" not in obj:
                     raise ValueError("Invalid OpenC2 response: results required")
                 message = OpenC2Response(obj["response"]["source"], obj["status"], obj["results"], 
-                                         obj["cmdref"] if "cmdref" in obj else None, obj["status_text"] if "status_text" in obj else None)
+                                         obj["cmdref"] if "cmdref" in obj else None,
+                                         obj["status_text"] if "status_text" in obj else None)
             else:
                 raise ValueError("Invalid OpenC2 response: source required")
         return message
