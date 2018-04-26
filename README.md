@@ -1,7 +1,5 @@
 <div>
-<h1>README</h1>
-
-## Lycan
+<h1>Lycan</h1>
 ![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
 
 Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
