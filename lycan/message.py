@@ -126,11 +126,26 @@ class OpenC2Command(OpenC2Message):
         self.actuator = None if actuator == None else OpenC2CommandField(actuator)
         self.modifiers = AttributeDict(modifiers)
 
+    def __setattr__(self, k, v):
+        if k == 'action' and isinstance(v, unicode):
+           v = v.encode('utf-8')
+
+        if k == 'target' and not isinstance(v, OpenC2CommandField):
+           raise TypeError("target must be OpenC2CommandField")
+        elif k == 'actuator' and not isinstance(v, (OpenC2CommandField, type(None))):
+           raise TypeError("actuator must be OpenC2CommandField or None")
+        elif k == 'action' and not isinstance(v, str):
+           raise TypeError("action must be str")
+        elif k == 'modifiers' and not isinstance(v, AttributeDict):
+           raise TypeError("modifiers must be AttributeDict")
+        else:
+           super(OpenC2Command, self).__setattr__(k, v)
+
 class OpenC2Response(OpenC2Message):
     """Class for OpenC2 Response
 
     Attributes:
-        source (str): Command source
+        source (:OpenC2CommandField): Command source
         status (str): Request status
         results (str): Result string
         cmdref (str, optional): Command reference
@@ -139,8 +154,21 @@ class OpenC2Response(OpenC2Message):
     def __init__(self, source, status, results,
                  cmdref=None, status_text=None):
         super(OpenC2Response, self).__init__()
-        self.source = source
+        self.source = OpenC2CommandField(source)
         self.status = status
         self.results = results
         self.cmdref = cmdref
         self.status_text = status_text
+
+    def __setattr__(self, k, v):
+        if k in ['status', 'results', 'cmdref', 'status_text'] and isinstance(v, unicode):
+           v = v.encode('utf-8')
+
+        if k == 'source' and not isinstance(v, OpenC2CommandField):
+           raise TypeError("source must be OpenC2CommandField")
+        elif k in ['cmdref', 'status_text'] and not isinstance(v, (str, type(None))):
+           raise TypeError("%s must be a string or None" % k)
+        elif k in ['status', 'results'] and not isinstance(v, str):
+           raise TypeError("%s must be a string" % k)
+        else:
+           super(OpenC2Response, self).__setattr__(k, v)
