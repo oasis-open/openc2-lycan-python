@@ -1,5 +1,29 @@
-<div>
-<h1>README</h1>
+# Lycan
+![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
+
+Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
+The current implementation is based on the 1.0.0 Release Cadidate 4 documentation. 
+
+## Usage
+
+```python
+import uuid, json
+import lycan.datamodels as openc2
+from lycan.message import OpenC2Command,OpenC2Response
+from lycan.serializations import OpenC2MessageEncoder,OpenC2MessageDecoder
+
+# encode
+cmd = OpenC2Command(action=openc2.DENY, target=openc2.IPV4_ADDR)
+cmd.target.value = '1.2.3.4'
+cmd.modifiers.command_id = str(uuid.uuid4())
+msg = json.dumps(cmd, cls=OpenC2MessageEncoder)
+
+# decode
+cmd = json.loads(msg, cls=OpenC2MessageDecoder)
+if cmd.action == openc2.DENY and cmd.target == openc2.IPV4_ADDR:
+    ip = cmd.target.value
+    command_id = cmd.modifiers.command_id
+```
 
 <div>
 <h2><a id="readme-general">OASIS TC Open Repository: openc2-lycan-python</a></h2>
@@ -61,4 +85,4 @@
 
 <p>Questions or comments about this TC Open Repository's activities should be composed as GitHub issues or comments. If use of an issue/comment is not possible or appropriate, questions may be directed by email to the Maintainer(s) <a href="#currentMaintainers">listed above</a>.  Please send general questions about TC Open Repository participation to OASIS Staff at <a href="mailto:repository-admin@oasis-open.org">repository-admin@oasis-open.org</a> and any specific CLA-related questions to <a href="mailto:repository-cla@oasis-open.org">repository-cla@oasis-open.org</a>.</p>
 
-</div></div>
+</div>
