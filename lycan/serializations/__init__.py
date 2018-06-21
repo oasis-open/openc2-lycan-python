@@ -30,58 +30,139 @@
 """
 
 import six, json
-from lycan.message import OpenC2Command, OpenC2Response
-
+from lycan.message import OpenC2Message, OpenC2Command, OpenC2Response, OpenC2Target, OpenC2Actuator, OpenC2Header
 
 class OpenC2MessageEncoder(json.JSONEncoder):
-    def default(self, obj):
-        message = {}
-        if isinstance(obj, OpenC2Command):
-            message["action"] = obj.action
-            message["target"] = {"type": str(obj.target)}
-            for (k, v) in six.iteritems(obj.target.specifiers):
-                message["target"][k] = v
-            if obj.actuator:
-                message["actuator"] = {"type": str(obj.actuator)}
-                for (k, v) in six.iteritems(obj.actuator.specifiers):
-                    message["actuator"][k] = v
-            if obj.modifiers:
-                message["modifiers"] = obj.modifiers
-        elif isinstance(obj, OpenC2Response):
-            message["response"] = {"source": {"type": str(obj.source)}}
-            message["status"] = obj.status
-            message["results"] = obj.results
-            if obj.cmdref:
-                message["cmdref"] = obj.cmdref
-            if obj.status_text:
-                message["status_text"] = obj.status_text
+
+    def _encode_message(self, obj, message):
+        if obj.header:
+            message["header"] = {}
+            header = obj.header
+            message["header"]["version"] = header.version
+            if header.id:
+                message["header"]["id"] = header.id
+            if header.created:
+                message["header"]["created"] = header.created
+            if header.sender:
+                message["header"]["sender"] = header.sender
+            message["header"]["content_type"] = header.content_type
+        if obj.body:
+            body = obj.body
+            if isinstance(body, OpenC2Command):
+                message["command"] = {}
+                self._encode_command(body, message["command"])
+            elif isinstance(body, OpenC2Response):
+                message["response"] = {}
+                self._encode_response(body, message["response"])
+            else:
+                raise ValueError("Invalid OpenC2 message")
         else:
             raise ValueError("Invalid OpenC2 message")
+
+    def _encode_command(self, obj, message):
+        message["action"] = obj.action
+        if isinstance(obj.target.specifiers, six.string_types):
+            message["target"] = {str(obj.target): str(obj.target.specifiers)}
+        else:
+            target =  str(obj.target)
+            message["target"] = {target: {}}
+            if obj.target.specifiers:
+                for (k, v) in six.iteritems(obj.target.specifiers):
+                    message["target"][target][k] = v
+        if obj.actuator:
+            actuator = str(obj.actuator)
+            message["actuator"] = {actuator: {}}
+            if obj.actuator.specifiers:
+                for (k, v) in six.iteritems(obj.actuator.specifiers):
+                    message["actuator"][actuator][k] = v
+        if obj.id:
+            message["id"] = str(obj.id)
+        if obj.args:
+            message["args"] = obj.args
+
+    def _encode_response(self, obj, message):
+        message["id"] = obj.id
+        message["id_ref"] = obj.id_ref
+        message["status"] = obj.status
+        if obj.status_text:
+            message["status_text"] = obj.status_text
+        if obj.results:
+            message["results"] = obj.results
+
+    def default(self, obj):
+        message = {}
+        if isinstance(obj, OpenC2Message):
+            self._encode_message(obj, message)
+        if isinstance(obj, OpenC2Command):
+            self._encode_command(obj, message)
+        if isinstance(obj, OpenC2Response):
+            self._encode_response(obj, message)
         return message
 
 class OpenC2MessageDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
-    def object_hook(self, obj):
-        message = obj
-        if "action" in obj:
-            if "target" not in obj:
-                raise ValueError("Invalid OpenC2 command: target required")
-            message = OpenC2Command(obj["action"], obj["target"],
-                                    obj["actuator"] if "actuator" in obj else None,
-                                    obj["modifiers"] if "modifiers" in obj else {})
+    def _decode_message(self, obj):
+        header = self._decode_header(obj["header"])
+        if "command" in obj:
+           body = obj["command"]
         elif "response" in obj:
-            if "source" in obj["response"]:
-                if "type" not in obj["response"]["source"]:
-                    raise ValueError("Invalid OpenC2 response source: type required")
-                if "status" not in obj:
-                    raise ValueError("Invalid OpenC2 response: status required")
-                if "results" not in obj:
-                    raise ValueError("Invalid OpenC2 response: results required")
-                message = OpenC2Response(obj["response"]["source"], obj["status"], obj["results"], 
-                                         obj["cmdref"] if "cmdref" in obj else None,
-                                         obj["status_text"] if "status_text" in obj else None)
-            else:
-                raise ValueError("Invalid OpenC2 response: source required")
+           body = obj["response"]
+        else:
+           raise ValueError("Invalid OpenC2 message")
+        return OpenC2Message(header, body)
+
+    def _decode_header(self, obj):
+        if "version" not in obj:
+            raise ValueError("Invalid OpenC2 header: version required")
+        if "content_type" not in obj:
+            raise ValueError("Invalid OpenC2 header: content_type required")
+        return OpenC2Header(obj["version"],
+                            obj["command_id"] if "command_id" in obj else None,
+                            obj["created"] if "created" in obj else None,
+                            obj["sender"] if "sender" in obj else None,
+                            obj["content_type"] if "content_type" in obj else None)
+
+    def _decode_command(self, obj):
+        if "target" not in obj:
+            raise ValueError("Invalid OpenC2 command: target required")
+        target_name = list(obj["target"].keys())[0]
+        target_specifiers = list(obj["target"].values())[0]
+        if isinstance(target_specifiers, dict):
+            target = OpenC2Target(target_name, **target_specifiers)
+        elif isinstance(target_specifiers, six.string_types):
+            target = OpenC2Target(target_name, target_specifiers)
+        else:
+            raise ValueError("Invalid OpenC2 command target")
+
+        actuator = None
+        if "actuator" in obj:
+            actuator_name = list(obj["actuator"].keys())[0]
+            actuator_specifiers = list(obj["actuator"].values())[0]
+            actuator = OpenC2Actuator(actuator_name, **actuator_specifiers)
+        return OpenC2Command(obj["action"], target,
+                             obj["id"] if "id" in obj else None,
+                             actuator, obj["args"] if "args" in obj else {})
+
+    def _decode_response(self, obj):
+        if "id" not in obj:
+            raise ValueError("Invalid OpenC2 response: id required")
+        if "id_ref" not in obj:
+            raise ValueError("Invalid OpenC2 response: id_ref required")
+        if "status" not in obj:
+            raise ValueError("Invalid OpenC2 response: status required")
+        return OpenC2Response(obj["id"], obj["id_ref"], obj["status"],
+                              obj["status_text"] if "status_text" in obj else None,
+                              obj["results"] if "results" in obj else None)
+
+    def object_hook(self, obj):
+        if "header" in obj:
+            message = self._decode_message(obj)
+        elif "action" in obj:
+            message = self._decode_command(obj)
+        elif "id_ref" in obj:
+            message = self._decode_response(obj)
+        else:
+            message = obj
         return message
