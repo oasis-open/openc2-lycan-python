@@ -21,7 +21,6 @@
 #
 
 import unittest
-import lycan.datamodels as openc2
 from lycan.message import OpenC2Response
 
 class TestOpenC2Response(unittest.TestCase):
@@ -32,5 +31,5 @@ class TestOpenC2Response(unittest.TestCase):
     def test_init_fail(self):
         self.assertRaises(TypeError, OpenC2Response, 'network-firewall')
     def test_init(self):
-        x = OpenC2Response(openc2.NETWORK_FIREWALL, 'completed', 'passed', '1', 'foo')
-        self.assertEqual(x.source, 'openc2:network-firewall')
+        x = OpenC2Response('test-1','cmd-1', '200', 'passed', 'foo')
+        self.assertEqual(x.id, 'test-1')
