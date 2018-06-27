@@ -30,7 +30,7 @@
 """
 
 import six, json
-from lycan.message import OpenC2Message, OpenC2Command, OpenC2Response, OpenC2Target, OpenC2Actuator, OpenC2Header
+from lycan.message import *
 
 class OpenC2MessageEncoder(json.JSONEncoder):
 
@@ -81,8 +81,8 @@ class OpenC2MessageEncoder(json.JSONEncoder):
             message["args"] = obj.args
 
     def _encode_response(self, obj, message):
-        message["id"] = obj.id
-        message["id_ref"] = obj.id_ref
+        message["id"] = str(obj.id)
+        message["id_ref"] = str(obj.id_ref)
         message["status"] = obj.status
         if obj.status_text:
             message["status_text"] = obj.status_text
@@ -143,7 +143,7 @@ class OpenC2MessageDecoder(json.JSONDecoder):
             actuator = OpenC2Actuator(actuator_name, **actuator_specifiers)
         return OpenC2Command(obj["action"], target,
                              obj["id"] if "id" in obj else None,
-                             actuator, obj["args"] if "args" in obj else {})
+                             actuator, OpenC2Args(obj["args"]) if "args" in obj else None)
 
     def _decode_response(self, obj):
         if "id" not in obj:

@@ -66,26 +66,28 @@ class OpenC2Actuator(OpenC2CommandField):
             for k,v in six.iteritems(kwargs):
                 self._specifiers[k] = v
 
+OpenC2Args = AttributeDict
+
 class OpenC2Command(object):
     """Class for OpenC2 Command
 
     Attributes:
         action (str): Action
         target (:OpenC2Target): Target
-        id (str): Command-ID
+        id (str, optional): Command-ID
         actuator (:OpenC2Actuator, optional): Actuator
         args (:AttributeDict, optional): Command-Args
 
     Raises:
         ValueError: If missing any required fields
     """
-    def __init__(self, action, target, id=None, actuator=None, args={}):
+    def __init__(self, action, target, id=None, actuator=None, args=None):
         super(OpenC2Command, self).__init__()
         self.action = action
         self.target = target
         self.id = id
         self.actuator = actuator
-        self.args = AttributeDict(args)
+        self.args = args
 
     def __setattr__(self, k, v):
         if k == 'target' and not isinstance(v, OpenC2Target):
@@ -96,8 +98,8 @@ class OpenC2Command(object):
            raise TypeError("action must be str")
         elif k == 'id' and not isinstance(v, (uuid.UUID, six.string_types, type(None))):
            raise TypeError("id must be str or None")
-        elif k == 'args' and not isinstance(v, AttributeDict):
-           raise TypeError("args must be AttributeDict")
+        elif k == 'args' and not isinstance(v, (OpenC2Args, type(None))):
+           raise TypeError("args must be OpenC2Args or None")
         else:
            super(OpenC2Command, self).__setattr__(k, v)
 
