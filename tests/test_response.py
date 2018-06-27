@@ -31,5 +31,5 @@ class TestOpenC2Response(unittest.TestCase):
     def test_init_fail(self):
         self.assertRaises(TypeError, OpenC2Response, 'network-firewall')
     def test_init(self):
-        x = OpenC2Response('test-1', 'cmd-1', '200', 'passed', 'foo')
+        x = OpenC2Response('test-1', 'cmd-1', 200, 'passed', 'foo')
         self.assertEqual(x.id, 'test-1')

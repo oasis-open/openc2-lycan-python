@@ -74,7 +74,7 @@ class TestJsonDecode(unittest.TestCase):
         _msg = {
                'id': 'test1',
                'id_ref': 'cmd1',
-               'status':'200',
+               'status': 200,
                'status_text':'passed',
                'results':'foo'
         }
@@ -84,7 +84,7 @@ class TestJsonDecode(unittest.TestCase):
     def test_response_decode_invalid(self):
         _msg = {
                'id_ref': 'cmd1',
-               'status':'200',
+               'status': 200,
                'status_text':'passed',
                'results':'foo'
         }
