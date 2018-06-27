@@ -46,11 +46,11 @@ class AttributeDict(dict):
             del self[k]
 
 class OpenC2CommandField(object):
-    """Class for Command Target/Actuator
+    """Base Class for Command Target/Actuator
 
     Attributes:
-        name(str): target/actuator name
-        _specifiers (:AttributeDict, optional): target/actuator specifiers
+        _name (str): target/actuator name
+        _specifiers (AttributeDict, optional): target/actuator specifiers
 
     Raises:
         TypeError: If required `name` is missing

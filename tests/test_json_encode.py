@@ -80,11 +80,11 @@ class TestJsonEncode(unittest.TestCase):
         _msg = {
                'id': 'test1',
                'id_ref': 'cmd1',
-               'status':'200',
+               'status': 200,
                'status_text':'passed',
                'results':'foo'
         }
-        x = OpenC2Response('test1', 'cmd1', '200', 'passed', 'foo')
+        x = OpenC2Response('test1', 'cmd1', 200, 'passed', 'foo')
         msg = OpenC2MessageEncoder().encode(x)
         self.assertEqual(msg, OpenC2MessageEncoder().encode(_msg))
 
