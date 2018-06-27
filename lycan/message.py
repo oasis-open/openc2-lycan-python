@@ -81,13 +81,13 @@ class OpenC2Command(object):
     Raises:
         ValueError: If missing any required fields
     """
-    def __init__(self, action, target, id=None, actuator=None, args=None):
+    def __init__(self, action, target, id=None, actuator=None, args={}):
         super(OpenC2Command, self).__init__()
         self.action = action
         self.target = target
         self.id = id
         self.actuator = actuator
-        self.args = args
+        self.args = OpenC2Args(args) if isinstance(args, dict) else args
 
     def __setattr__(self, k, v):
         if k == 'target' and not isinstance(v, OpenC2Target):
