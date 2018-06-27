@@ -1,28 +1,36 @@
 # Lycan
 ![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
+[![Build Status](https://travis-ci.org/open-oasis/openc2-lycan-python.svg?branch=feature%2Fcsd04)](https://travis-ci.org/open-oasis/openc2-lycan-python)
+[![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg?branch=feature%2Fcsd04)](https://coveralls.io/github/open-oasis/openc2-lycan-python?branch=feature%2Fcsd04)
 
 Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
-The current implementation is based on the 1.0.0 Release Cadidate 4 documentation. 
+The current implementation is based on CSD04.
 
 ## Usage
 
 ```python
-import uuid, json
+import uuid, json, iptc
 import lycan.datamodels as openc2
-from lycan.message import OpenC2Command,OpenC2Response
-from lycan.serializations import OpenC2MessageEncoder,OpenC2MessageDecoder
+from lycan.message import OpenC2Command, OpenC2Response, OpenC2Target
+from lycan.serializations import OpenC2MessageEncoder, OpenC2MessageDecoder
 
 # encode
-cmd = OpenC2Command(action=openc2.DENY, target=openc2.IPV4_ADDR)
-cmd.target.value = '1.2.3.4'
-cmd.modifiers.command_id = str(uuid.uuid4())
+cmd = OpenC2Command(action=openc2.DENY,
+                    target=OpenC2Target(openc2.IP_ADDR, '1.2.3.4'),
+                    id=uuid.uuid4()
+                    args=OpenC2Args(response_requested='complete'))
 msg = json.dumps(cmd, cls=OpenC2MessageEncoder)
 
 # decode
 cmd = json.loads(msg, cls=OpenC2MessageDecoder)
-if cmd.action == openc2.DENY and cmd.target == openc2.IPV4_ADDR:
-    ip = cmd.target.value
-    command_id = cmd.modifiers.command_id
+if cmd.action == openc2.DENY and cmd.target == openc2.IP_ADDR:
+    rule = iptc.Rule()
+    rule.create_match(cmd.target.ip_addr)
+    rule.create_target("DROP")
+
+    if cmd.args.response_requested == 'complete':
+        resp = OpenC2Response(uuid.uuid4(), cmd.id, 200)
+        msg = json.dumps(resp, cls=OpenC2MessageEncoder)
 ```
 
 <div>
