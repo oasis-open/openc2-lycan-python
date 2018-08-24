@@ -29,146 +29,149 @@
 
 """
 
-from lycan import __version__
+from lycan import __version__, AttributeDict, OpenC2CommandField
+import uuid, six
 
 class OpenC2Message(object):
-    """ Base class for OpenC2 message types """
-    def __init__(self):
-        self.version = __version__
-
-class AttributeDict(dict):
-    """Support accessing dictionary elements as attributes"""
-    def __getattr__(self, k):
-        if k not in self:
-            return None
-        return self[k]
-    def __setattr__(self, k, v):
-        self[k] = v
-    def __delattr__(self, k):
-        if k in self:
-            del self[k]
-
-class OpenC2CommandField(object):
-    """Class for Command Target/Actuator
-
-    Note:
-        Define any class attributes as private, public attributes are assumed to be specifiers
+    """Class for OpenC2 Message
 
     Attributes:
-        _type (str): target/actuator type
-        _specifiers (:AttributeDict, optional): target/actuator specifiers
-
-    Raises:
-        TypeError: If required `type` is missing
+        header (OpenC2Header): Information associated with an OpenC2 command or response
+        body (OpenC2Command, OpenC2Response): The message payload, either
+            OpenC2Command or OpenC2Response
     """
-    def __init__(self, _type):
-        if isinstance(_type, dict):
-            if 'type' not in _type:
-                raise ValueError("Invalid OpenC2 field: type required")
-            self._type = _type.pop('type')
-            self._specifiers = AttributeDict(_type)
-        elif isinstance(_type, str):
-            self._type = _type
+    def __init__(self, header=None, body=None):
+        self.header = header
+        self.body = body
+
+class OpenC2Header(object):
+    """Class for OpenC2 Header
+
+    Attributes:
+        version (str): Message protocol version
+        id (str, UUID, optional): An identifier used to correlate responses to a command
+        created (str, optional): Date and time the message was created
+        sender (str, optional): Date and time the message was created
+        content_type (str): The type and version of the message body
+
+    """
+    def __init__(self, version=__version__, id=None, created=None, sender=None,
+                 content_type='application/json'):
+        self.version = version
+        self.id = id
+        self.created = created
+        self.sender = sender
+        self.content_type = content_type
+
+class OpenC2Target(OpenC2CommandField):
+    """Class for OpenC2 Target
+
+    Attributes:
+        _name(str): The name of the object of the action
+        _specifiers(str, AttributeDict): Further identifies the target
+             to some level of precision, such as a specific target,
+             a list of targets, or a class of targets.
+    """
+    def __init__(self, _name, *args, **kwargs):
+        super(OpenC2Target, self).__init__(_name)
+        if args and len(args) == 1 and isinstance(args[0], six.string_types):
+            self._specifiers = args[0]
+        elif kwargs:
             self._specifiers = AttributeDict()
+            for k,v in six.iteritems(kwargs):
+                self._specifiers[k] = v
         else:
-            raise TypeError("_type must be dict or str")
+            self._specifiers = None
 
-        self._type = self.get_datamodel(self._type)
+class OpenC2Actuator(OpenC2CommandField):
+    """Class for OpenC2 Actuator
 
-    def get_datamodel(self, _type):
-        """Build fully-qualified datamodel"""
-        try:
-            datamodel, _ = _type.split(':')
-        except ValueError:
-            return 'openc2:' + _type
-        else:
-            return _type
+    Attributes:
+        _name(str): The name of the set of functions performed by
+            the actuator, and the name of the profile defining
+            commands applicable to those functions.
+        _specifiers(AttributeDict): The specifier identifies the
+            actuator to some level of precision, such as a
+            specific actuator, a list of actuators, or a group of
+            actuators.
+    """
+    def __init__(self, _name, **kwargs):
+        super(OpenC2Actuator, self).__init__(_name)
+        if kwargs:
+            self._specifiers = AttributeDict()
+            for k,v in six.iteritems(kwargs):
+                self._specifiers[k] = v
 
-    def __setattr__(self, k, v):
-        if k.startswith('_'):
-            super(OpenC2CommandField, self).__setattr__(k, v)
-        else:
-            setattr(self._specifiers, k, v)
+"""Alias for OpenC2Args class"""
+OpenC2Args = AttributeDict
 
-    def __getattr__(self, k):
-        return getattr(self._specifiers, k)
-
-    def __repr__(self):
-        return self._type
-
-    def __eq__(self, other):
-        return str(self._type) == self.get_datamodel(other)
-
-    def __ne__(self, other):
-        return str(self._type) != self.get_datamodel(other)
-
-    @property
-    def specifiers(self):
-        """dict: Specifiers dictionary"""
-        return self._specifiers
-
-class OpenC2Command(OpenC2Message):
+class OpenC2Command(object):
     """Class for OpenC2 Command
 
     Attributes:
-        action (str): Action
-        target (:OpenC2CommandField): Target
-        actuator (:OpenC2CommandField, optional): Actuator
-        modifiers (:AttributeDict, optional): Modifiers
+        action (str): The task or activity to be performed
+        target (OpenC2Target): The object of the action. The action is
+            performed on the target.
+        id (str, optional): The subject of the action. The actuator
+            executes the action on the target.
+        actuator (OpenC2Actuator, optional): An object containing
+            additional properties that apply to the command
+        args (OpenC2Args, dict, AttributeDict, optional): Identifier
+            used to link responses to a command
 
     Raises:
         ValueError: If missing any required fields
     """
-    def __init__(self, action, target, actuator=None, modifiers={}):
+    def __init__(self, action, target, id=None, actuator=None, args={}):
         super(OpenC2Command, self).__init__()
         self.action = action
-        self.target = OpenC2CommandField(target)
-        self.actuator = None if actuator == None else OpenC2CommandField(actuator)
-        self.modifiers = AttributeDict(modifiers)
+        self.target = target
+        self.id = id
+        self.actuator = actuator
+        self.args = args
 
     def __setattr__(self, k, v):
-        if k == 'action' and isinstance(v, unicode):
-           v = v.encode('utf-8')
-
-        if k == 'target' and not isinstance(v, OpenC2CommandField):
-           raise TypeError("target must be OpenC2CommandField")
-        elif k == 'actuator' and not isinstance(v, (OpenC2CommandField, type(None))):
-           raise TypeError("actuator must be OpenC2CommandField or None")
-        elif k == 'action' and not isinstance(v, str):
+        if k == 'target' and not isinstance(v, OpenC2Target):
+           raise TypeError("target must be OpenC2Target or str")
+        elif k == 'actuator' and not isinstance(v, (OpenC2Actuator, type(None))):
+           raise TypeError("actuator must be OpenC2Actuator or None")
+        elif k == 'action' and not isinstance(v, six.string_types):
            raise TypeError("action must be str")
-        elif k == 'modifiers' and not isinstance(v, AttributeDict):
-           raise TypeError("modifiers must be AttributeDict")
-        else:
-           super(OpenC2Command, self).__setattr__(k, v)
+        elif k == 'id' and not isinstance(v, (uuid.UUID, six.string_types, type(None))):
+           raise TypeError("id must be str or None")
+        elif k == 'args':
+           if isinstance(v, (AttributeDict, dict)):
+               v = OpenC2Args(v)
+           elif not isinstance(v, (OpenC2Args, type(None))):
+               raise TypeError("args must be OpenC2Args, dict or None")
+        super(OpenC2Command, self).__setattr__(k, v)
 
-class OpenC2Response(OpenC2Message):
+class OpenC2Response(object):
     """Class for OpenC2 Response
 
     Attributes:
-        source (:OpenC2CommandField): Command source
-        status (str): Request status
-        results (str): Result string
-        cmdref (str, optional): Command reference
-        status_text (str, optional): Free-form description
+        id (str): ID of the response
+        id_ref (str): ID of the command that induced this response
+        status (int): An integer status code
+        status_text (str, optional): A free-form human-readable
+            description of the response status
+        results (str, optional): Data or extended status information
+            that was requested from an OpenC2 Command
     """
-    def __init__(self, source, status, results,
-                 cmdref=None, status_text=None):
+    def __init__(self, id, id_ref, status,
+                 status_text=None, results=None):
         super(OpenC2Response, self).__init__()
-        self.source = OpenC2CommandField(source)
+        self.id = id
+        self.id_ref = id_ref
         self.status = status
-        self.results = results
-        self.cmdref = cmdref
         self.status_text = status_text
+        self.results = results
 
     def __setattr__(self, k, v):
-        if k in ['status', 'results', 'cmdref', 'status_text'] and isinstance(v, unicode):
-           v = v.encode('utf-8')
-
-        if k == 'source' and not isinstance(v, OpenC2CommandField):
-           raise TypeError("source must be OpenC2CommandField")
-        elif k in ['cmdref', 'status_text'] and not isinstance(v, (str, type(None))):
-           raise TypeError("%s must be a string or None" % k)
-        elif k in ['status', 'results'] and not isinstance(v, str):
+        if k in ['id', 'id_ref'] and not isinstance(v, (uuid.UUID, six.string_types)):
            raise TypeError("%s must be a string" % k)
-        else:
-           super(OpenC2Response, self).__setattr__(k, v)
+        elif k == 'status' and not isinstance(v, six.integer_types):
+           raise TypeError("%s must be a string or integer " % k)
+        elif k == 'status_text' and not isinstance(v, (six.string_types, type(None))):
+           raise TypeError("%s must be a string or None" % k)
+        super(OpenC2Response, self).__setattr__(k, v)

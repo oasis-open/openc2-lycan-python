@@ -21,7 +21,7 @@
 #
 
 import unittest
-from lycan.message import AttributeDict, OpenC2CommandField, OpenC2Command
+from lycan.message import AttributeDict, OpenC2CommandField, OpenC2Command, OpenC2Header, OpenC2Message, OpenC2Target, OpenC2Actuator
 
 class TestAttributeDict(unittest.TestCase):
     def setUp(self):
@@ -45,26 +45,17 @@ class TestOpenC2CommandField(unittest.TestCase):
         pass
     def test_init_str(self):
         x = OpenC2CommandField('foo')
-        self.assertEqual(x, 'openc2:foo')
-    def test_init_dict(self):
-        x = OpenC2CommandField({'type':'foo'})
         self.assertEqual(x, 'foo')
-    def test_init_notype(self):
-        self.assertRaises(ValueError, OpenC2CommandField, {'foo':'bar'})
-    def test_init_empty(self):
-        self.assertRaises(TypeError, OpenC2CommandField, )
-    def test_init_other(self):
-        self.assertRaises(TypeError, OpenC2CommandField, None)
-    def test_init_datamodel(self):
-        x = OpenC2CommandField('foo:bar')
-        self.assertNotEqual(x, 'openc2:bar')
+    def test_init_dict(self):
+        x = OpenC2CommandField('foo')
+        self.assertEqual(x, 'foo')
     def test_specifier_set(self):
         x = OpenC2CommandField('foo')
         x.value = 1
         self.assertEqual(x.value, 1)
     def test_specifiers_get(self):
-        x = OpenC2CommandField({'type':'foo','value':1,'y':'bar'})
-        self.assertEqual(x.specifiers, {'value':1, 'y':'bar'})
+        x = OpenC2CommandField('foo')
+        self.assertEqual(x.specifiers, None)
 
 class TestOpenC2Command(unittest.TestCase):
     def setUp(self):
@@ -74,11 +65,42 @@ class TestOpenC2Command(unittest.TestCase):
     def test_init_fail(self):
         self.assertRaises(TypeError, OpenC2Command, 'deny')
     def test_init_noactuator(self):
-        x = OpenC2Command('deny','ipv4_addr')
+        x = OpenC2Command('deny', OpenC2Target('ip_addr'))
         self.assertEqual(x.action, 'deny')
     def test_init_actuator(self):
-        x = OpenC2Command('deny','ipv4_addr','firewall')
+        x = OpenC2Command('deny', OpenC2Target('ip_addr'), 'test', OpenC2Actuator('firewall'))
         self.assertEqual(x.actuator, 'firewall')
-    def test_init_modifiers(self):
-        x = OpenC2Command('deny','ipv4_addr','firewall',{'foo':'bar'})
-        self.assertEqual(x.modifiers.foo, 'bar')
+    def test_init_args(self):
+        x = OpenC2Command('deny', OpenC2Target('ip_addr') , 'test', OpenC2Actuator('firewall'), {'foo':'bar'})
+        self.assertEqual(x.args.foo, 'bar')
+
+class TestOpenC2Header(unittest.TestCase):
+    def setUp(self):
+        pass
+    def tearDown(self):
+        pass
+    def test_init_fail(self):
+        self.assertRaises(TypeError, OpenC2Command, 'deny')
+    def test_init_version(self):
+        x = OpenC2Header('0.1.1')
+        self.assertEqual(x.version, '0.1.1')
+
+class TestOpenC2Message(unittest.TestCase):
+    def setUp(self):
+        pass
+    def tearDown(self):
+        pass
+    def test_init(self):
+        hdr = OpenC2Header('0.1.1')
+        cmd = OpenC2Command('deny', OpenC2Target('ip_addr', '1.2.3.4'))
+        msg = OpenC2Message(hdr, cmd)
+        self.assertEqual(msg.header.version, '0.1.1')
+
+class TestOpenC2Actuator(unittest.TestCase):
+    def setUp(self):
+        pass
+    def tearDown(self):
+        pass
+    def test_init_version(self):
+        x = OpenC2Actuator('firewall', where='perimeter', asset_id='123')
+        self.assertEqual(x, 'firewall')
