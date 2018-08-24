@@ -1,7 +1,7 @@
 # Lycan
 ![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
-[![Build Status](https://travis-ci.org/oasis-open/openc2-lycan-python.svg?branch=feature%2Fcsd04)](https://travis-ci.org/open-oasis/openc2-lycan-python)
-[![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg?branch=feature%2Fcsd04)](https://coveralls.io/github/open-oasis/openc2-lycan-python?branch=feature%2Fcsd04)
+[![Build Status](https://travis-ci.org/oasis-open/openc2-lycan-python.svg)](https://travis-ci.org/open-oasis/openc2-lycan-python)
+[![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg)](https://coveralls.io/github/open-oasis/openc2-lycan-python)
 
 Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
 The current implementation is based on CSD04.
@@ -17,7 +17,7 @@ from lycan.serializations import OpenC2MessageEncoder, OpenC2MessageDecoder
 # encode
 cmd = OpenC2Command(action=openc2.DENY,
                     target=OpenC2Target(openc2.IP_ADDR, '1.2.3.4'),
-                    id=uuid.uuid4()
+                    id=uuid.uuid4(),
                     args=OpenC2Args(response_requested='complete'))
 msg = json.dumps(cmd, cls=OpenC2MessageEncoder)
 
