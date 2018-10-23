@@ -1,10 +1,11 @@
 # Lycan
 ![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
 [![Build Status](https://travis-ci.org/oasis-open/openc2-lycan-python.svg)](https://travis-ci.org/open-oasis/openc2-lycan-python)
-[![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg)](https://coveralls.io/github/open-oasis/openc2-lycan-python)
+[![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg)](https://coveralls.io/github/oasis-open/openc2-lycan-python)
 
-Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. 
-The current implementation is based on CSD04.
+Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. The current implementation is based on CSD04.
+
+<p>This repository contains code developed against an earlier version of the OpenC2 language than that presented by OASIS for public review in October / November 2018 and is NOT CONSISTENT WITH THE VERSION UNDERGOING PUBLIC REVIEW. Any implementer of OpenC2 using this code should be aware that it will require updating to align with the current OpenC2 Language Specification.</p>
 
 ## Usage
 
