@@ -18,7 +18,7 @@ from lycan.serializations import OpenC2MessageEncoder, OpenC2MessageDecoder
 # encode
 cmd = OpenC2Command(action=openc2.DENY,
                     target=OpenC2Target(openc2.IP_ADDR, '1.2.3.4'),
-                    id=uuid.uuid4()
+                    id=uuid.uuid4(),
                     args=OpenC2Args(response_requested='complete'))
 msg = json.dumps(cmd, cls=OpenC2MessageEncoder)
 
