@@ -106,19 +106,19 @@ class InternationalizedDomainName(_Target):
     ])
 
 class InternationalizedEmailAddress(_Target):
-    _type = 'idn_email'
+    _type = 'idn_email_addr'
     _properties = OrderedDict([
-        ('idn_email', properties.StringProperty(required=True)),
+        ('idn_email_addr', properties.StringProperty(required=True)),
     ])
 
 class IPv4Address(_Target):
-    _type = 'ipv4_addr'
+    _type = 'ipv4_net'
     _properties = OrderedDict([
         ('ipv4_net', properties.StringProperty(required=True)),
     ])
 
 class IPv6Address(_Target):
-    _type = 'ipv6_addr'
+    _type = 'ipv6_net'
     _properties = OrderedDict([
         ('ipv6_net', properties.StringProperty(required=True)),
     ])
@@ -182,7 +182,7 @@ class Process(_Target):
     _properties = OrderedDict([
         ('pid', properties.IntegerProperty()),
         ('name', properties.StringProperty()),
-        ('cmd', properties.StringProperty()),
+        ('cwd', properties.StringProperty()),
         ('executable', FileProperty()),
         ('parent', ProcessProperty()),
         ('command_line', properties.StringProperty()),
