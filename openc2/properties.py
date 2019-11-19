@@ -39,7 +39,12 @@ from collections import OrderedDict
 import re, inspect
 
 class PayloadProperty(Property):
-    pass
+    def clean(self, value):
+        try:
+            obj = Payload(**value)
+        except Exception as e:
+            raise e
+        return obj
 
 class ProcessProperty(Property):
     pass

@@ -56,7 +56,7 @@ OBJ_MAP_TARGET = {
     'features': Features,
     'file': File,
     'idn_domain_name': InternationalizedDomainName,
-    'idn_email': InternationalizedEmailAddress,
+    'idn_email_addr': InternationalizedEmailAddress,
     'ipv4_net': IPv4Address,
     'ipv6_net': IPv6Address,
     'ipv4_connection': IPv4Connection,
