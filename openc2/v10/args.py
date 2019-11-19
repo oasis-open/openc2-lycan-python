@@ -20,32 +20,44 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os
-from distutils.core import setup
-from setuptools import find_packages
+"""
+.. module: openc2.v10.args
+    :platform: Unix
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-VERSION_FILE = os.path.join(BASE_DIR, 'openc2', 'version.py')
+.. version:: $$VERSION$$
+.. moduleauthor:: Michael Stair <mstair@att.com>
 
-def get_version():
-    with open(VERSION_FILE) as f:
-        for line in f.readlines():
-            if line.startswith('__version__'):
-                version = line.split()[-1].strip('"')
-                return version
-        raise AttributeError("Package does not have a __version__")
+"""
 
-setup(
-    name='openc2',
-    version=get_version(),
-    description='Produce and consume OpenC2 JSON messages',
-    packages=find_packages(exclude=["tests"]),
-    license='MIT',
-    include_package_data=True,
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
-    install_requires=[
-        'six',
-        'stix2'
-    ],
-)
+from stix2 import properties
+from ..base import _OpenC2Base
+from ..custom import _custom_args_builder
+
+import itertools
+from collections import OrderedDict
+
+class Args(_OpenC2Base):
+    _type = 'args'
+    _properties = OrderedDict([
+        ('start_time', properties.IntegerProperty()),
+        ('stop_time', properties.IntegerProperty()),
+        ('duration', properties.IntegerProperty()),
+        ('response_requested', properties.EnumProperty(
+            allowed=[
+                "none",
+                "ack",
+                "status",
+                "complete"
+            ] 
+        ))
+    ])
+
+def CustomArgs(type='x-acme', properties=None):
+    def wrapper(cls):
+        _properties = list(itertools.chain.from_iterable([
+            [x for x in properties if not x[0].startswith('x_')],
+            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
+        ]))
+        return _custom_args_builder(cls, type, _properties, '2.1')
+
+    return wrapper

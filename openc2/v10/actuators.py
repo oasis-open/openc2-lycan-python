@@ -1,7 +1,7 @@
 #
 #  The MIT License (MIT)
 #
-# Copyright 2018 AT&T Intellectual Property. All other rights reserved.
+# Copyright 2019 AT&T Intellectual Property. All other rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software
 # and associated documentation files (the "Software"), to deal in the Software without
@@ -20,16 +20,28 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import unittest
-from lycan.message import OpenC2Response
+"""
+.. module: openc2.v10.actuators
+    :platform: Unix
 
-class TestOpenC2Response(unittest.TestCase):
-    def setUp(self):
-        pass
-    def tearDown(self):
-        pass
-    def test_init_fail(self):
-        self.assertRaises(TypeError, OpenC2Response, 'network-firewall')
-    def test_init(self):
-        x = OpenC2Response('test-1', 'cmd-1', 200, 'passed', 'foo')
-        self.assertEqual(x.id, 'test-1')
+.. version:: $$VERSION$$
+.. moduleauthor:: Michael Stair <mstair@att.com>
+
+"""
+
+#from stix2 import properties
+#from ..base import _Actuator
+from ..custom import _custom_actuator_builder
+
+import itertools
+#from collections import OrderedDict
+
+def CustomActuator(type='x-acme', properties=None):
+    def wrapper(cls):
+        _properties = list(itertools.chain.from_iterable([
+            [x for x in properties if not x[0].startswith('x_')],
+            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
+        ]))
+        return _custom_actuator_builder(cls, type, _properties, '2.1')
+
+    return wrapper

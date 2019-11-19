@@ -3,35 +3,46 @@
 [![Build Status](https://travis-ci.org/oasis-open/openc2-lycan-python.svg)](https://travis-ci.org/open-oasis/openc2-lycan-python)
 [![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg)](https://coveralls.io/github/oasis-open/openc2-lycan-python)
 
-Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. The current implementation is based on CSD04.
+Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. The current implementation is based on the Language Specification v1.0.
 
-<p>This repository contains code developed against an earlier version of the OpenC2 language than that presented by OASIS for public review in October / November 2018 and is NOT CONSISTENT WITH THE VERSION UNDERGOING PUBLIC REVIEW. Any implementer of OpenC2 using this code should be aware that it will require updating to align with the current OpenC2 Language Specification.</p>
+Given the influence of STIX/CyBoX on OpenC2, this library extends the [STIX 2 Python API](https://github.com/oasis-open/cti-python-stix2) internals. Property validation and object extension support aligns with STIX2 conventions.
 
 ## Usage
 
 ```python
-import uuid, json, iptc
-import lycan.datamodels as openc2
-from lycan.message import OpenC2Command, OpenC2Response, OpenC2Target
-from lycan.serializations import OpenC2MessageEncoder, OpenC2MessageDecoder
+import iptc
+from openc2 import parse, IPv4Address, Command, Response, Args
 
 # encode
-cmd = OpenC2Command(action=openc2.DENY,
-                    target=OpenC2Target(openc2.IP_ADDR, '1.2.3.4'),
-                    id=uuid.uuid4(),
-                    args=OpenC2Args(response_requested='complete'))
-msg = json.dumps(cmd, cls=OpenC2MessageEncoder)
+cmd = Command(action = "deny",
+              target = IPv4Address(ipv4_net = "1.2.3.4"),
+              args = Args(response_requested = "complete"))
+msg = cmd.serialize()
 
 # decode
-cmd = json.loads(msg, cls=OpenC2MessageDecoder)
-if cmd.action == openc2.DENY and cmd.target == openc2.IP_ADDR:
+cmd = parse(msg)
+if cmd.action == "deny" and cmd.target.type == "ipv4_net":
     rule = iptc.Rule()
-    rule.create_match(cmd.target.ip_addr)
+    rule.create_match(cmd.target.ipv4_net)
     rule.create_target("DROP")
 
     if cmd.args.response_requested == 'complete':
-        resp = OpenC2Response(uuid.uuid4(), cmd.id, 200)
-        msg = json.dumps(resp, cls=OpenC2MessageEncoder)
+        resp = Response(status=200)
+        msg = resp.serialize()
+
+# custom actuator
+from openc2 import CustomActuator
+from stix2 import properties
+@CustomActuator('x-acme-widget', [
+    ('name', properties.StringProperty(required=True)),
+    ('version', properties.FloatProperty())
+])
+class AcmeWidgetActuator(object):
+    def __init__(self, version=None, **kwargs):
+        if version and version < 1.0:
+            raise ValueError("'%f' is not a supported version." % version)
+
+widget = AcmeWidgetActuator(name="foo", version=1.1)
 ```
 
 <div>
