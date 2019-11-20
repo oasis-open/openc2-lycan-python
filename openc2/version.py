@@ -20,32 +20,13 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-import os
-from distutils.core import setup
-from setuptools import find_packages
+"""
+.. module: openc2.version
+    :platform: Unix
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-VERSION_FILE = os.path.join(BASE_DIR, 'openc2', 'version.py')
+.. version:: $$VERSION$$
+.. moduleauthor:: Michael Stair <mstair@att.com>
 
-def get_version():
-    with open(VERSION_FILE) as f:
-        for line in f.readlines():
-            if line.startswith('__version__'):
-                version = line.split()[-1].strip('"')
-                return version
-        raise AttributeError("Package does not have a __version__")
+"""
 
-setup(
-    name='openc2',
-    version=get_version(),
-    description='Produce and consume OpenC2 JSON messages',
-    packages=find_packages(exclude=["tests"]),
-    license='MIT',
-    include_package_data=True,
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
-    install_requires=[
-        'six',
-        'stix2'
-    ],
-)
+__version__ = "1.0.0"
