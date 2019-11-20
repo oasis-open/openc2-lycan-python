@@ -195,7 +195,19 @@ class Process(_Target):
         super(Process, self)._check_object_constraints()
         self._check_at_least_one_property()
         if self.get('parent'):
-            self._inner['parent'] = dict(self.get('parent'))
+            dictified = dict(self.get('parent'))
+            try:
+                Process(**dictified)
+            except Exception as e:
+                raise e
+            self._inner['parent'] = dictified
+        if self.get('executable'):
+            dictified = dict(self.get('executable'))
+            try:
+                File(**dictified)
+            except Exception as e:
+                raise e
+            self._inner['executable'] = dictified
 
 class Properties(_Target):
     _type = 'properties'
