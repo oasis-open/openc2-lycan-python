@@ -7,9 +7,9 @@ Lycan is an implementation of the OpenC2 OASIS standard for command and control 
 
 Given the influence of STIX/CyBoX on OpenC2, this library extends the [STIX 2 Python API](https://github.com/oasis-open/cti-python-stix2) internals. Property validation and object extension support aligns with STIX2 conventions.
 
-##Installation
+## Installation
 
-Install with `pip <https://pip.pypa.io/en/stable/>`__:
+Install with [pip](https://pip.pypa.io/en/stable):
 
 ```bash
 $ pip install openc2
