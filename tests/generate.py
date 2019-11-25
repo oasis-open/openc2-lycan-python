@@ -114,6 +114,12 @@ cmd = Command(action="query",
 with open('Ipv6Connection.json', 'w') as OUT:
     OUT.write(cmd.serialize(pretty=True)+'\n')
 
+#Ipv6Net
+cmd = Command(action="locate",
+            target=IPv6Address(ipv4_net="AE:00:E4:F1:04:65/24"))
+with open('Ipv6Net.json', 'w') as OUT:
+    OUT.write(cmd.serialize(pretty=True)+'\n')
+
 #Iri
 cmd = Command(action="remediate",
             target=IRI(iri='My IRI identifier'))
