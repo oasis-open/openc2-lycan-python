@@ -31,7 +31,6 @@
 
 from stix2 import properties
 from ..base import _OpenC2Base, _Actuator, _Target
-#from ..custom import _custom_actuator_builder
 from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
 
 import itertools
