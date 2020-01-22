@@ -31,7 +31,7 @@
 
 from stix2 import properties
 from ..base import _OpenC2Base, _Actuator, _Target
-from ..custom import _custom_actuator_builder
+#from ..custom import _custom_actuator_builder
 from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
 
 import itertools
@@ -49,7 +49,7 @@ class SLPFActuator(_Actuator):
 class SLPFTarget(_Target):
     _type = 'slpf:rule_number'
     _properties = OrderedDict([
-        ('slpf:rule_number', properties.IntegerProperty(required=True)),
+        ('rule_number', properties.IntegerProperty(required=True)),
     ])
 
 class SLPFArgs(_OpenC2Base):

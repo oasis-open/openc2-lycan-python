@@ -41,6 +41,10 @@ class OpenC2JSONEncoder(STIXJSONEncoder):
                 #collapse targets with a single specifier (ie, DomainName)
                 if len(obj._properties) == 1 and obj._type in obj._properties.keys():
                     tmp_obj = tmp_obj.get(obj._type)
+                #handle custom target specifiers
+                if obj._type.find(':'):
+                    nsid, _type = obj._type.split(':')
+                    tmp_obj = tmp_obj.get(_type)
                 #for target/actuators, return type and specifiers dict
                 return {obj._type:tmp_obj}
             else:
