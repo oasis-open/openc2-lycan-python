@@ -48,7 +48,7 @@ class SLPFActuator(_Actuator):
 class SLPFTarget(_Target):
     _type = 'slpf:rule_number'
     _properties = OrderedDict([
-        ('rule_number', properties.IntegerProperty(required=True)),
+        ('rule_number', properties.StringProperty(required=True)),
     ])
 
 class SLPFArgs(_OpenC2Base):
