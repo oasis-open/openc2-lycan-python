@@ -87,6 +87,11 @@ def parse_component(data, allow_custom=False, version=None, component_type=None)
             if allow_custom:
                 return obj
             raise CustomContentError("Can't parse unknown target/actuator type '%s'!" % _type)
+    #extended targets
+    if component_type == "targets" and ':' in _type:
+        nsid, target = _type.split(':')
+        obj = {target:obj[_type]}
+        _type = target
     if isinstance(_specifiers, dict):
         obj = obj[_type]
 

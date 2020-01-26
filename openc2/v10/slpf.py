@@ -42,13 +42,13 @@ class SLPFActuator(_Actuator):
         ('hostname', properties.StringProperty()),
         ('named_group', properties.StringProperty()),
         ('asset_id', properties.StringProperty()),
-        ('asset_tuple', properties.StringProperty()),
+        ('asset_tuple', properties.ListProperty(properties.StringProperty))
     ])
 
 class SLPFTarget(_Target):
     _type = 'slpf:rule_number'
     _properties = OrderedDict([
-        ('rule_number', properties.IntegerProperty(required=True)),
+        ('rule_number', properties.StringProperty(required=True)),
     ])
 
 class SLPFArgs(_OpenC2Base):
