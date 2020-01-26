@@ -42,7 +42,7 @@ class SLPFActuator(_Actuator):
         ('hostname', properties.StringProperty()),
         ('named_group', properties.StringProperty()),
         ('asset_id', properties.StringProperty()),
-        ('asset_tuple', properties.StringProperty()),
+        ('asset_tuple', properties.ListProperty(properties.StringProperty))
     ])
 
 class SLPFTarget(_Target):
