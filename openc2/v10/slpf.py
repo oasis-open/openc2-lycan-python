@@ -102,5 +102,5 @@ class SLPF(_OpenC2Base):
                 in ['features', 'file', 'ipv4_net', 'ipv6_net', 'ipv4_connection', 
                         'ipv6_connection', 'slpf:rule_number']:
             raise ValueError("Unsupported target (%s)"%self.target)
-        if self.actuator and not isinstance(self.actuator, SLPFActuator):
+        if 'actuator' in self and not isinstance(self.actuator, SLPFActuator):
             raise ValueError("Unsupported actuator (%s)"%self.actuator._type)
