@@ -78,7 +78,6 @@ class Features(_Target):
 
     def _check_object_constraints(self):
         super(Features, self)._check_object_constraints()
-        self._check_at_least_one_property()
         if 'features' in self._inner:
             features = self._inner['features']
             if len(features) > 10:
@@ -86,6 +85,8 @@ class Features(_Target):
             for feature in features:
                 if feature not in ["versions", "profiles", "pairs", "rate_limit"]:
                     raise ValueError("%s unsupported feature")
+        else:
+            self._inner['features'] = []
 
 class File(_Target): 
     _type = 'file'
