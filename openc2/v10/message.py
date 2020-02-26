@@ -30,50 +30,63 @@
 """
 
 from stix2.properties import (
-    EnumProperty, DictionaryProperty, IntegerProperty, StringProperty
+    EnumProperty,
+    DictionaryProperty,
+    IntegerProperty,
+    StringProperty,
 )
 from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
 from ..base import _OpenC2Base, _Target
 
 from collections import OrderedDict
 
+
 class Command(_OpenC2Base):
-    _type = 'command'
-    _properties = OrderedDict([
-        ('action', EnumProperty(
-            allowed=[
-                "scan",
-                "locate",
-                "query",
-                "deny",
-                "contain",
-                "allow",
-                "start",
-                "stop",
-                "restart",
-                "cancel",
-                "set",
-                "update",
-                "redirect",
-                "create",
-                "delete",
-                "detonate",
-                "restore",
-                "copy",
-                "investigate",
-                "remediate"
-            ], required=True
-        )),
-        ('target', TargetProperty(required=True)),
-        ('args', ArgsProperty()),
-        ('actuator', ActuatorProperty()),
-        ('command_id', StringProperty())
-    ])
+    _type = "command"
+    _properties = OrderedDict(
+        [
+            (
+                "action",
+                EnumProperty(
+                    allowed=[
+                        "scan",
+                        "locate",
+                        "query",
+                        "deny",
+                        "contain",
+                        "allow",
+                        "start",
+                        "stop",
+                        "restart",
+                        "cancel",
+                        "set",
+                        "update",
+                        "redirect",
+                        "create",
+                        "delete",
+                        "detonate",
+                        "restore",
+                        "copy",
+                        "investigate",
+                        "remediate",
+                    ],
+                    required=True,
+                ),
+            ),
+            ("target", TargetProperty(required=True)),
+            ("args", ArgsProperty()),
+            ("actuator", ActuatorProperty()),
+            ("command_id", StringProperty()),
+        ]
+    )
+
 
 class Response(_OpenC2Base):
-    _type = 'response'
-    _properties = OrderedDict([
-        ('status', IntegerProperty(required=True)),
-        ('status_text', StringProperty()),
-        ('results', DictionaryProperty()),
-    ])
+    _type = "response"
+    _properties = OrderedDict(
+        [
+            ("status", IntegerProperty(required=True)),
+            ("status_text", StringProperty()),
+            ("results", DictionaryProperty()),
+        ]
+    )

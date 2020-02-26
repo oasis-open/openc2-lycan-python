@@ -36,71 +36,76 @@ from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
 import itertools
 from collections import OrderedDict
 
+
 class SLPFActuator(_Actuator):
-    _type = 'slpf'
-    _properties = OrderedDict([
-        ('hostname', properties.StringProperty()),
-        ('named_group', properties.StringProperty()),
-        ('asset_id', properties.StringProperty()),
-        ('asset_tuple', properties.ListProperty(properties.StringProperty))
-    ])
+    _type = "slpf"
+    _properties = OrderedDict(
+        [
+            ("hostname", properties.StringProperty()),
+            ("named_group", properties.StringProperty()),
+            ("asset_id", properties.StringProperty()),
+            ("asset_tuple", properties.ListProperty(properties.StringProperty)),
+        ]
+    )
+
 
 class SLPFTarget(_Target):
-    _type = 'slpf:rule_number'
-    _properties = OrderedDict([
-        ('rule_number', properties.StringProperty(required=True)),
-    ])
+    _type = "slpf:rule_number"
+    _properties = OrderedDict(
+        [("rule_number", properties.StringProperty(required=True)),]
+    )
+
 
 class SLPFArgs(_OpenC2Base):
-    _type = 'slpf'
-    _properties = OrderedDict([
-        ('drop_process', properties.EnumProperty(
-            allowed=[
-                "none",
-                "reject",
-                "false_ack",
-            ] 
-        )),
-        ('persistent', properties.EnumProperty(
-            allowed=[
-                "none",
-                "reject",
-                "false_ack",
-            ] 
-        )),
-        ('direction', properties.EnumProperty(
-            allowed=[
-                "both",
-                "ingress",
-                "egress",
-            ] 
-        )),
-        ('insert_rule', properties.IntegerProperty()),
-    ])
+    _type = "slpf"
+    _properties = OrderedDict(
+        [
+            (
+                "drop_process",
+                properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
+            ),
+            (
+                "persistent",
+                properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
+            ),
+            (
+                "direction",
+                properties.EnumProperty(allowed=["both", "ingress", "egress",]),
+            ),
+            ("insert_rule", properties.IntegerProperty()),
+        ]
+    )
+
 
 class SLPF(_OpenC2Base):
-    _type = 'slpf'
-    _properties = OrderedDict([
-        ('action', properties.EnumProperty(
-            allowed=[
-                "query",
-                "deny",
-                "allow",
-                "update",
-                "delete",
-            ], required=True
-        )),
-        ('target', TargetProperty(required=True)),
-        ('args', ArgsProperty()),
-        ('actuator', ActuatorProperty()),
-        ('command_id', properties.StringProperty())
-    ])
+    _type = "slpf"
+    _properties = OrderedDict(
+        [
+            (
+                "action",
+                properties.EnumProperty(
+                    allowed=["query", "deny", "allow", "update", "delete",],
+                    required=True,
+                ),
+            ),
+            ("target", TargetProperty(required=True)),
+            ("args", ArgsProperty()),
+            ("actuator", ActuatorProperty()),
+            ("command_id", properties.StringProperty()),
+        ]
+    )
 
     def _check_object_constraints(self):
         super(SLPF, self)._check_object_constraints()
-        if not isinstance(self.target, _Target) or not self.target.type \
-                in ['features', 'file', 'ipv4_net', 'ipv6_net', 'ipv4_connection', 
-                        'ipv6_connection', 'slpf:rule_number']:
-            raise ValueError("Unsupported target (%s)"%self.target)
-        if 'actuator' in self and not isinstance(self.actuator, SLPFActuator):
-            raise ValueError("Unsupported actuator (%s)"%self.actuator._type)
+        if not isinstance(self.target, _Target) or not self.target.type in [
+            "features",
+            "file",
+            "ipv4_net",
+            "ipv6_net",
+            "ipv4_connection",
+            "ipv6_connection",
+            "slpf:rule_number",
+        ]:
+            raise ValueError("Unsupported target (%s)" % self.target)
+        if "actuator" in self and not isinstance(self.actuator, SLPFActuator):
+            raise ValueError("Unsupported actuator (%s)" % self.actuator._type)

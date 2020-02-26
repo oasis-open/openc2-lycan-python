@@ -29,19 +29,28 @@
 
 """
 
-#from stix2 import properties
-#from ..base import _Actuator
+# from stix2 import properties
+# from ..base import _Actuator
 from ..custom import _custom_actuator_builder
 
 import itertools
-#from collections import OrderedDict
 
-def CustomActuator(type='x-acme', properties=None):
+# from collections import OrderedDict
+
+
+def CustomActuator(type="x-acme", properties=None):
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [x for x in properties if not x[0].startswith('x_')],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-        ]))
-        return _custom_actuator_builder(cls, type, _properties, '2.1')
+        _properties = list(
+            itertools.chain.from_iterable(
+                [
+                    [x for x in properties if not x[0].startswith("x_")],
+                    sorted(
+                        [x for x in properties if x[0].startswith("x_")],
+                        key=lambda x: x[0],
+                    ),
+                ]
+            )
+        )
+        return _custom_actuator_builder(cls, type, _properties, "2.1")
 
     return wrapper

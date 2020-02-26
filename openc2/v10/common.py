@@ -33,13 +33,13 @@ from stix2 import properties
 from collections import OrderedDict
 from ..base import _OpenC2DataType
 
+
 class Payload(_OpenC2DataType):
-    _type = 'payload'
-    _properties = OrderedDict([
-        ('bin', properties.BinaryProperty()),
-        ('url', properties.StringProperty())
-    ])
+    _type = "payload"
+    _properties = OrderedDict(
+        [("bin", properties.BinaryProperty()), ("url", properties.StringProperty())]
+    )
 
     def _check_object_constraints(self):
         super(Payload, self)._check_object_constraints()
-        self._check_mutually_exclusive_properties(['bin', 'url'])
+        self._check_mutually_exclusive_properties(["bin", "url"])

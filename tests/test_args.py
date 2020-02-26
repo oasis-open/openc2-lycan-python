@@ -6,10 +6,7 @@ import stix2.exceptions
 
 
 def test_args_response_requested():
-    valid = ["none",
-                "ack",
-                "status",
-                "complete"]
+    valid = ["none", "ack", "status", "complete"]
     for v in valid:
         a = openc2.v10.Args(response_requested=v)
         print(a)
@@ -19,6 +16,7 @@ def test_args_response_requested():
 
     with pytest.raises(stix2.exceptions.InvalidValueError):
         openc2.v10.Args(response_requested="bad")
+
 
 def test_args_start_time():
     # Value is the number of milliseconds since 00:00:00 UTC, 1 January 1970
@@ -38,6 +36,7 @@ def test_args_start_time():
 
     # xxx: floats are currently valid and passing
 
+
 def test_args_stop_time():
     # Value is the number of milliseconds since 00:00:00 UTC, 1 January 1970
 
@@ -56,6 +55,7 @@ def test_args_stop_time():
 
     # xxx: floats etc is currently valid and passing
 
+
 def test_args_duration():
     # Value is the number of milliseconds since 00:00:00 UTC, 1 January 1970
 
@@ -73,6 +73,7 @@ def test_args_duration():
             openc2.v10.Args(duration=item)
 
     # xxx: floats etc is currently valid and passing
+
 
 def test_args_combination():
     # Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.

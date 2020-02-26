@@ -36,38 +36,51 @@ from ..custom import _custom_args_builder
 import itertools
 from collections import OrderedDict
 
+
 class Args(_OpenC2Base):
-    _type = 'args'
-    _properties = OrderedDict([
-        ('start_time', properties.IntegerProperty(min=0)),
-        ('stop_time', properties.IntegerProperty(min=0)),
-        ('duration', properties.IntegerProperty(min=0)),
-        ('response_requested', properties.EnumProperty(
-            allowed=[
-                "none",
-                "ack",
-                "status",
-                "complete"
-            ] 
-        ))
-    ])
+    _type = "args"
+    _properties = OrderedDict(
+        [
+            ("start_time", properties.IntegerProperty(min=0)),
+            ("stop_time", properties.IntegerProperty(min=0)),
+            ("duration", properties.IntegerProperty(min=0)),
+            (
+                "response_requested",
+                properties.EnumProperty(allowed=["none", "ack", "status", "complete"]),
+            ),
+        ]
+    )
 
     def _check_object_constraints(self):
         super(Args, self)._check_object_constraints()
-        if 'stop_time' in self and 'start_time' in self and 'duration' in self:
-            raise stix2.exceptions.PropertyPresenceError("start_time, stop_time, duration: Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.", self.__class__)
+        if "stop_time" in self and "start_time" in self and "duration" in self:
+            raise stix2.exceptions.PropertyPresenceError(
+                "start_time, stop_time, duration: Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.",
+                self.__class__,
+            )
 
-        if 'stop_time' in self and 'start_time' in self:
+        if "stop_time" in self and "start_time" in self:
             if self.stop_time < self.start_time:
-                raise stix2.exceptions.InvalidValueError(self.__class__, 'stop_time', reason="stop_time must be greater than start_time")
+                raise stix2.exceptions.InvalidValueError(
+                    self.__class__,
+                    "stop_time",
+                    reason="stop_time must be greater than start_time",
+                )
 
 
-def CustomArgs(type='x-acme', properties=None):
+def CustomArgs(type="x-acme", properties=None):
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [x for x in properties if not x[0].startswith('x_')],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-        ]))
-        return _custom_args_builder(cls, type, _properties, '2.1')
+        _properties = list(
+            itertools.chain.from_iterable(
+                [
+                    [x for x in properties if not x[0].startswith("x_")],
+                    sorted(
+                        [x for x in properties if x[0].startswith("x_")],
+                        key=lambda x: x[0],
+                    ),
+                ]
+            )
+        )
+        return _custom_args_builder(cls, type, _properties, "2.1")
 
     return wrapper
