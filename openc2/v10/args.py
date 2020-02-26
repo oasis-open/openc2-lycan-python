@@ -28,7 +28,7 @@
 .. moduleauthor:: Michael Stair <mstair@att.com>
 
 """
-
+import stix2.exceptions
 from stix2 import properties
 from ..base import _OpenC2Base
 from ..custom import _custom_args_builder
@@ -39,9 +39,9 @@ from collections import OrderedDict
 class Args(_OpenC2Base):
     _type = 'args'
     _properties = OrderedDict([
-        ('start_time', properties.IntegerProperty()),
-        ('stop_time', properties.IntegerProperty()),
-        ('duration', properties.IntegerProperty()),
+        ('start_time', properties.IntegerProperty(min=0)),
+        ('stop_time', properties.IntegerProperty(min=0)),
+        ('duration', properties.IntegerProperty(min=0)),
         ('response_requested', properties.EnumProperty(
             allowed=[
                 "none",
@@ -51,6 +51,16 @@ class Args(_OpenC2Base):
             ] 
         ))
     ])
+
+    def _check_object_constraints(self):
+        super(Args, self)._check_object_constraints()
+        if 'stop_time' in self and 'start_time' in self and 'duration' in self:
+            raise stix2.exceptions.PropertyPresenceError("start_time, stop_time, duration: Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.", self.__class__)
+
+        if 'stop_time' in self and 'start_time' in self:
+            if self.stop_time < self.start_time:
+                raise stix2.exceptions.InvalidValueError(self.__class__, 'stop_time', reason="stop_time must be greater than start_time")
+
 
 def CustomArgs(type='x-acme', properties=None):
     def wrapper(cls):
