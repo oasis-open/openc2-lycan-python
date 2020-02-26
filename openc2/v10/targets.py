@@ -29,8 +29,15 @@
 
 """
 
+import stix2.exceptions
 from stix2 import properties
-from ..properties import PayloadProperty, HashesProperty, ProcessProperty, FileProperty
+from ..properties import (
+    PayloadProperty,
+    HashesProperty,
+    ProcessProperty,
+    FileProperty,
+    EmptyListProperty,
+)
 from ..base import _Target, OpenC2JSONEncoder
 from ..custom import _custom_target_builder
 
@@ -82,20 +89,29 @@ class EmailAddress(_Target):
 class Features(_Target):
     _type = "features"
     _properties = OrderedDict(
-        [("features", properties.ListProperty(properties.StringProperty))]
+        [("features", EmptyListProperty(properties.StringProperty, default=lambda: []))]
     )
+
+    def __init__(self, features=None, *args, **kwargs):
+        # _check_object_constraints wasn't called unless features was declared here
+        super(Features, self).__init__(features=features, *args, **kwargs)
 
     def _check_object_constraints(self):
         super(Features, self)._check_object_constraints()
-        if "features" in self._inner:
-            features = self._inner["features"]
-            if len(features) > 10:
-                raise ValueError("Maximum of 10 features allowed")
-            for feature in features:
-                if feature not in ["versions", "profiles", "pairs", "rate_limit"]:
-                    raise ValueError("%s unsupported feature")
-        else:
-            self._inner["features"] = []
+
+        if len(self.features) > 10:
+            raise stix2.exceptions.InvalidValueError(
+                self.__class__, "features", "Maximum of 10 features allowed"
+            )
+        seen = []
+        for feature in self.features:
+            if feature in seen:
+                raise stix2.exceptions.InvalidValueError(
+                    self.__class__,
+                    "features",
+                    "A Producer MUST NOT send a list containing more than one instance of any Feature.",
+                )
+            seen.append(feature)
 
 
 class File(_Target):

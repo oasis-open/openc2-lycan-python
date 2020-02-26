@@ -134,3 +134,12 @@ class ArgsProperty(DictionaryProperty):
             raise ValueError("This property may only contain a dictionary or object")
         parsed_obj = parse_args(dictified, allow_custom=self.allow_custom)
         return parsed_obj
+
+
+class EmptyListProperty(properties.ListProperty):
+    def clean(self, value):
+        # stix2 doesn't allow empty lists
+        if value == None or value == []:
+            return []
+
+        return super(EmptyListProperty, self).clean(value)
