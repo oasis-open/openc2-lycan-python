@@ -35,14 +35,16 @@ from stix2.base import _cls_init
 from .base import _OpenC2Base, _Target, _Actuator
 from .core import OPENC2_OBJ_MAPS, _register_extension
 
+
 def _custom_target_builder(cls, type, properties, version):
     class _CustomTarget(cls, _Target):
 
         try:
-            nsid, target = type.split(':')
+            nsid, target = type.split(":")
         except IndexError:
             raise ValueError(
-                "Invalid Extended Target name '%s': must be namespace:target format" % type
+                "Invalid Extended Target name '%s': must be namespace:target format"
+                % type
             )
         if len(nsid) > 16:
             raise ValueError(
@@ -50,7 +52,9 @@ def _custom_target_builder(cls, type, properties, version):
             )
 
         if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+            raise ValueError(
+                "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
+            )
 
         _type = type
         _properties = OrderedDict(properties)
@@ -66,13 +70,15 @@ def _custom_target_builder(cls, type, properties, version):
 def _custom_actuator_builder(cls, type, properties, version):
     class _CustomActuator(cls, _Actuator):
 
-        if not type.startswith('x-'):
+        if not type.startswith("x-"):
             raise ValueError(
                 "Invalid Extended Actuator name '%s': must start with x-" % type
             )
 
         if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+            raise ValueError(
+                "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
+            )
 
         _type = type
         _properties = OrderedDict(properties)
@@ -84,11 +90,14 @@ def _custom_actuator_builder(cls, type, properties, version):
     _register_extension(_CustomActuator, object_type="actuators", version=version)
     return _CustomActuator
 
+
 def _custom_args_builder(cls, type, properties, version):
     class _CustomArgs(cls, _OpenC2Base):
 
         if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+            raise ValueError(
+                "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
+            )
 
         _type = type
         _properties = OrderedDict(properties)

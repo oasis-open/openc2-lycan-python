@@ -33,24 +33,26 @@ from stix2.base import _STIXBase, STIXJSONEncoder
 import copy
 import json
 
+
 class OpenC2JSONEncoder(STIXJSONEncoder):
     def default(self, obj):
         if isinstance(obj, _OpenC2Base):
             tmp_obj = dict(copy.deepcopy(obj))
             if isinstance(obj, (_Target, _Actuator)):
-                #collapse targets with a single specifier (ie, DomainName)
+                # collapse targets with a single specifier (ie, DomainName)
                 if len(obj._properties) == 1 and obj._type in obj._properties.keys():
                     tmp_obj = tmp_obj.get(obj._type)
-                #handle custom target specifiers
-                if ':' in obj._type:
-                    nsid, _type = obj._type.split(':')
+                # handle custom target specifiers
+                if ":" in obj._type:
+                    nsid, _type = obj._type.split(":")
                     tmp_obj = tmp_obj.get(_type)
-                #for target/actuators, return type and specifiers dict
-                return {obj._type:tmp_obj}
+                # for target/actuators, return type and specifiers dict
+                return {obj._type: tmp_obj}
             else:
                 return tmp_obj
         else:
             return super(OpenC2JSONEncoder, self).default(obj)
+
 
 class _OpenC2Base(_STIXBase):
     def __init__(self, allow_custom=False, **kwargs):
@@ -58,27 +60,30 @@ class _OpenC2Base(_STIXBase):
 
     def serialize(self, pretty=False, **kwargs):
         if pretty:
-            kwargs.update({'indent': 4, 'separators': (',', ': ')})
+            kwargs.update({"indent": 4, "separators": (",", ": ")})
         return json.dumps(self, cls=OpenC2JSONEncoder, **kwargs)
 
-    #openc2 doesnt have 'type' properties in commands
+    # openc2 doesnt have 'type' properties in commands
     def __getattr__(self, name):
-        if name == 'type':
+        if name == "type":
             return self._type
         else:
             return super(_OpenC2Base, self).__getattr__(name)
 
     def __getitem__(self, key):
-        if key == 'type':
+        if key == "type":
             return self._type
         else:
             return super(_OpenC2Base, self).__getitem__(key)
 
+
 class _OpenC2DataType(_OpenC2Base):
     pass
 
+
 class _Target(_OpenC2Base):
     pass
+
 
 class _Actuator(_OpenC2Base):
     pass
