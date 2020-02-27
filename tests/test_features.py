@@ -14,6 +14,15 @@ def test_features_empty():
     f = openc2.v10.Features(None)
     assert f.features == []
 
+    f = openc2.v10.Features(["pairs"])
+    assert f.features
+    assert f.features[0] == "pairs"
+
+    f = openc2.v10.Features(["pairs", "versions"])
+    assert f.features
+    assert f.features[0] == "pairs"
+    assert f.features[1] == "versions"
+
 
 def test_features_unique():
     # A Producer MUST NOT send a list containing more than one instance of any Feature.
