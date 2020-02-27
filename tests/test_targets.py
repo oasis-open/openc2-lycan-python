@@ -28,7 +28,32 @@ def test_custom_target():
     class CustomTarget(object):
         pass
 
+    one = CustomTarget()
+    assert one != None # for some reason `assert one` fails
+
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        CustomTarget(bad="id")
+
     one = CustomTarget(id="uuid")
+    assert one
+    assert one.id == "uuid"
+
+    two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
+    assert one == two
+
+def test_custom_target_required():
+    @openc2.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty(required=True))])
+    class CustomTarget(object):
+        pass
+
+    with pytest.raises(stix2.exceptions.MissingPropertiesError):
+        CustomTarget()
+
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        CustomTarget(bad="id")
+
+    one = CustomTarget(id="uuid")
+    assert one
     assert one.id == "uuid"
 
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
@@ -47,12 +72,36 @@ def test_custom_target_with_custom_property():
     class CustomTargetProperty(object):
         pass
 
-    @openc2.CustomTarget("x-thing:id", [("id", CustomTargetProperty())])
+    @openc2.CustomTarget("x-thing:id", [("id", CustomTargetProperty(required=True))])
     class CustomTarget(object):
         pass
 
-    one = CustomTarget(id=CustomTargetProperty(name="what"))
-    assert one.id.name == "what"
+    # no property
+    with pytest.raises(stix2.exceptions.MissingPropertiesError):
+        CustomTarget()
+
+    # empty property
+
+    one = CustomTarget(id=CustomTargetProperty())
+    assert one
+
+    two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
+    assert one == two
+
+    # property with one value
+
+    one = CustomTarget(id=CustomTargetProperty(name="name"))
+    assert one.id.name == "name"
+
+    two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
+    assert one == two
+
+    # property with multiple values
+
+    one = CustomTarget(id=CustomTargetProperty(name="name", uid="uid", version="version"))
+    assert one.id.name == "name"
+    assert one.id.uid == "uid"
+    assert one.id.version == "version"
 
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
     assert one == two
