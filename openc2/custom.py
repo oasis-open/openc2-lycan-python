@@ -108,3 +108,50 @@ def _custom_args_builder(cls, type, properties, version):
 
     _register_extension(_CustomArgs, object_type="args", version=version)
     return _CustomArgs
+
+
+def _custom_property_builder(cls, type, properties, version):
+    import stix2
+
+    class _CustomProperty(cls, _OpenC2Base):
+
+        if not properties or not isinstance(properties, list):
+            raise ValueError(
+                "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
+            )
+
+        _type = type
+        _properties = OrderedDict(properties)
+
+        def __init__(self, required=False, fixed=None, default=None, **kwargs):
+            self.required = required
+            if fixed:
+                self._fixed_value = fixed
+                self.clean = self._default_clean
+                self.default = lambda: fixed
+            if default:
+                self.default = default
+
+            _OpenC2Base.__init__(self, **kwargs)
+            _cls_init(cls, self, kwargs)
+
+        def _default_clean(self, value):
+            if value != self._fixed_value:
+                raise ValueError("must equal '{}'.".format(self._fixed_value))
+            return value
+
+        def __setattr__(self, name, value):
+            # _OpenC2Base is immutable so we have to override that functionality
+            cls.__setattr__(self, name, value)
+
+        def clean(self, value):
+            return value
+
+        def __call__(self, value=None):
+            """Used by ListProperty to handle lists that have been defined with
+            either a class or an instance.
+            """
+            return value
+
+    _register_extension(_CustomProperty, object_type="properties", version=version)
+    return _CustomProperty

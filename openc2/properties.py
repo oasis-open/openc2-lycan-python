@@ -33,10 +33,14 @@ from stix2 import properties
 from stix2.properties import Property, DictionaryProperty
 from stix2.utils import _get_dict
 from .base import _OpenC2Base
-from .core import parse_component, parse_args
+from .core import parse_component, parse_args, _get_data_info
 from .v10.common import Payload
 from collections import OrderedDict
+from .custom import _custom_property_builder
 import re, inspect
+import itertools
+import copy
+from collections import OrderedDict
 
 
 class PayloadProperty(Property):
@@ -143,3 +147,21 @@ class EmptyListProperty(properties.ListProperty):
             return []
 
         return super(EmptyListProperty, self).clean(value)
+
+
+def CustomProperty(type="x-acme", properties=None):
+    def wrapper(cls):
+        _properties = list(
+            itertools.chain.from_iterable(
+                [
+                    [x for x in properties if not x[0].startswith("x_")],
+                    sorted(
+                        [x for x in properties if x[0].startswith("x_")],
+                        key=lambda x: x[0],
+                    ),
+                ]
+            )
+        )
+        return _custom_property_builder(cls, type, _properties, "2.1")
+
+    return wrapper

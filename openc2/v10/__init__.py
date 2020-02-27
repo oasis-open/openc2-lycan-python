@@ -90,4 +90,5 @@ EXT_MAP = {
     "targets": {"slpf:rule_number": SLPFTarget},
     "actuators": {"slpf": SLPFActuator},
     "args": {"slpf": SLPFArgs},
+    "properties": {},
 }
