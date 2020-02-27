@@ -33,7 +33,9 @@ def test_features_unique():
 
 def test_features_size():
     for s in range(10):
-        openc2.v10.Features(list(map(lambda x: str(x), list(range(s)))))
+        values = list(map(lambda x: str(x), list(range(s))))
+        f = openc2.v10.Features(values)
+        assert f.features == values
 
     # max 10 items
     with pytest.raises(stix2.exceptions.InvalidValueError):
