@@ -1,7 +1,7 @@
 [run]
 source =
-    lycan
+    openc2
 
 [report]
 include =
-    lycan/*
+    openc2/*
