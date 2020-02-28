@@ -19,7 +19,8 @@ def test_cmd_create():
     assert foo
     assert foo.action == "query"
     assert foo.target.features == []
-    assert foo.serialize() == '{"action": "query", "target": {"features": []}}'
+    assert '"action": "query"' in foo.serialize()
+    assert '"target": {"features": []}' in foo.serialize()
 
     bar = openc2.Command(**json.loads(foo.serialize()))
     assert bar == foo
@@ -67,10 +68,9 @@ def test_cmd_slpf_actuator():
     assert foo
     assert foo.action == "query"
     assert foo.actuator.hostname == "localhost"
-    assert (
-        foo.serialize()
-        == '{"action": "query", "target": {"features": []}, "actuator": {"slpf": {"hostname": "localhost"}}}'
-    )
+    assert '"action": "query"' in foo.serialize()
+    assert '"target": {"features": []}' in foo.serialize()
+    assert '"actuator": {"slpf": {"hostname": "localhost"}}' in foo.serialize()
 
     bar = openc2.Command(**json.loads(foo.serialize()))
     assert bar == foo
