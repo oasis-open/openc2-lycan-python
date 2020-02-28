@@ -30,7 +30,7 @@
 """
 
 from stix2.utils import _get_dict
-from stix2.exceptions import CustomContentError, ParseError
+from stix2.exceptions import CustomContentError, ParseError, InvalidValueError
 
 import copy
 import importlib
@@ -75,11 +75,12 @@ def dict_to_openc2(openc2_dict, allow_custom=False, version=None):
     return obj_class(allow_custom=allow_custom, **openc2_dict)
 
 
-def parse_component(data, allow_custom=False, version=None, component_type=None):
+def _get_data_info(data, component_type, allow_custom=False):
     obj = _get_dict(data)
     obj = copy.deepcopy(obj)
     try:
         _type = list(obj.keys())[0]
+        nsid = _type
         _specifiers = list(obj.values())[0]
     except IndexError:
         raise ParseError(
@@ -93,22 +94,49 @@ def parse_component(data, allow_custom=False, version=None, component_type=None)
         # check for extension
         try:
             EXT_MAP = OPENC2_OBJ_MAPS["extensions"]
-            obj_class = EXT_MAP[component_type][_type]
+            if component_type == "properties" and ":" in _type:
+                obj_class = EXT_MAP[component_type][_type.split(":")[0]]
+            else:
+                obj_class = EXT_MAP[component_type][_type]
         except KeyError:
             if allow_custom:
-                return obj
-            raise CustomContentError(
-                "Can't parse unknown target/actuator type '%s'!" % _type
-            )
+                obj_class = dict
+            else:
+                raise CustomContentError(
+                    "Can't parse unknown target/actuator type '%s'!" % _type
+                )
+
     # extended targets
     if component_type == "targets" and ":" in _type:
         nsid, target = _type.split(":")
         obj = {target: obj[_type]}
         _type = target
+
     if isinstance(_specifiers, dict):
         obj = obj[_type]
 
-    return obj_class(allow_custom=allow_custom, **obj)
+    return (obj, obj_class, _type, nsid)
+
+
+def parse_component(data, allow_custom=False, version=None, component_type=None):
+    (obj, obj_class, _type, nsid) = _get_data_info(
+        data, allow_custom=allow_custom, component_type=component_type
+    )
+
+    try:
+        return obj_class(allow_custom=allow_custom, **obj)
+    except:
+        if component_type != "properties":
+            parsed_obj = parse_component(
+                data, allow_custom=allow_custom, component_type="properties",
+            )
+
+            sub_type = _type
+            if nsid != _type:
+                _type = "%s:%s" % (nsid, _type)
+
+            return obj_class(**{sub_type: parsed_obj})
+        raise
 
 
 def parse_target(data, allow_custom=False, version=None):
@@ -136,7 +164,6 @@ def parse_args(data, allow_custom=False, version=None):
                     dictified[key] = cls(**subvalue)
                 else:
                     dictified[key] = cls(**subvalue)
-                    print(type(dictified[key]))
             elif type(subvalue) is cls:
                 # If already an instance of an _Extension class, assume it's valid
                 dictified[key] = subvalue
