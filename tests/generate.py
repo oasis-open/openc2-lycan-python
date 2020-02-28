@@ -41,13 +41,21 @@ cmd = Command(
     action="start",
     target=a,
     args=Args(
-        duration=30000,
         start_time=1568209029693,
         stop_time=1568209059693,
         response_requested="complete",
     ),
 )
 with open("Artifact2.json", "w") as OUT:
+    OUT.write(cmd.serialize(pretty=True) + "\n")
+
+# Artifact with args
+cmd = Command(
+    action="start",
+    target=a,
+    args=Args(duration=30000, start_time=1568209029693, response_requested="complete",),
+)
+with open("Artifact3.json", "w") as OUT:
     OUT.write(cmd.serialize(pretty=True) + "\n")
 
 # Artifact with bin
@@ -57,12 +65,12 @@ cmd = Command(
         payload=Payload(bin="YmluIGRhdGE="), hashes=hashes, mime_type="My MIME Type"
     ),
 )
-with open("Artifact3.json", "w") as OUT:
+with open("Artifact4.json", "w") as OUT:
     OUT.write(cmd.serialize(pretty=True) + "\n")
 
 # Artifact (update)
 cmd = Command(action="update", target=a)
-with open("Artifact4.json", "w") as OUT:
+with open("Artifact5.json", "w") as OUT:
     OUT.write(cmd.serialize(pretty=True) + "\n")
 
 # Device
@@ -150,7 +158,7 @@ with open("Ipv6Connection.json", "w") as OUT:
     OUT.write(cmd.serialize(pretty=True) + "\n")
 
 # Ipv6Net
-cmd = Command(action="locate", target=IPv6Address(ipv4_net="AE:00:E4:F1:04:65/24"))
+cmd = Command(action="locate", target=IPv6Address(ipv6_net="AE:00:E4:F1:04:65/24"))
 with open("Ipv6Net.json", "w") as OUT:
     OUT.write(cmd.serialize(pretty=True) + "\n")
 
