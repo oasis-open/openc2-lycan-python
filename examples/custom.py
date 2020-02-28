@@ -58,7 +58,7 @@ def main():
     print()
 
     print("=== Parsing command back to command ===")
-    cmd2 = openc2.Command(**d)  # fails even when allows_custom=True
+    cmd2 = openc2.Command(**d)
     print("=== COMMAND START ===")
     print(cmd2)
     print("=== COMMAND END ===")

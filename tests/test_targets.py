@@ -29,7 +29,7 @@ def test_custom_target():
         pass
 
     one = CustomTarget()
-    assert one != None # for some reason `assert one` fails
+    assert one != None  # for some reason `assert one` fails
 
     with pytest.raises(stix2.exceptions.ExtraPropertiesError):
         CustomTarget(bad="id")
@@ -41,8 +41,14 @@ def test_custom_target():
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
     assert one == two
 
+    with pytest.raises(stix2.exceptions.ParseError):
+        openc2.parse(one.serialize())
+
+
 def test_custom_target_required():
-    @openc2.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty(required=True))])
+    @openc2.CustomTarget(
+        "x-thing:id", [("id", stix2.properties.StringProperty(required=True))]
+    )
     class CustomTarget(object):
         pass
 
@@ -55,6 +61,9 @@ def test_custom_target_required():
     one = CustomTarget(id="uuid")
     assert one
     assert one.id == "uuid"
+
+    with pytest.raises(stix2.exceptions.ParseError):
+        openc2.parse(one.serialize())
 
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
     assert one == two
@@ -85,6 +94,9 @@ def test_custom_target_with_custom_property():
     one = CustomTarget(id=CustomTargetProperty())
     assert one
 
+    with pytest.raises(stix2.exceptions.ParseError):
+        openc2.parse(one.serialize())
+
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
     assert one == two
 
@@ -98,10 +110,15 @@ def test_custom_target_with_custom_property():
 
     # property with multiple values
 
-    one = CustomTarget(id=CustomTargetProperty(name="name", uid="uid", version="version"))
+    one = CustomTarget(
+        id=CustomTargetProperty(name="name", uid="uid", version="version")
+    )
     assert one.id.name == "name"
     assert one.id.uid == "uid"
     assert one.id.version == "version"
+
+    with pytest.raises(stix2.exceptions.ParseError):
+        openc2.parse(one.serialize())
 
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
     assert one == two
