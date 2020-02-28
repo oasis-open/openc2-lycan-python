@@ -42,7 +42,7 @@ def main():
     tp = CustomTargetProperty(name="target")
     print("target property", tp)
     t = CustomTarget(id=tp)
-    print("target": t)
+    print("target", t)
     args = CustomArgs(custom_args=CustomTargetProperty(name="args"))
     print("args", args)
     act = AcmeWidgetActuator(
