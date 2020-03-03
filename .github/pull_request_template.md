@@ -1,1 +1,2 @@
-- [ ] I have signed the [Contributor License Agreements (CLAs)](https://www.oasis-open.org/resources/open-repositories/cla)
+- [ ] I have signed the [Contributor License Agreements (CLAs)](https://www.oasis-open.org/resources/open-repositories/cla).
+- [ ] I have reviewed the [CONTRIBUTING.md](../CONTRIBUTING.md) file.
