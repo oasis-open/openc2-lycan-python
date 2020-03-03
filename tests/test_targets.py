@@ -44,6 +44,69 @@ def test_custom_target():
     with pytest.raises(stix2.exceptions.ParseError):
         openc2.parse(one.serialize())
 
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("x-invalid", [("id", stix2.properties.StringProperty())])
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("invalid_target", [("id", stix2.properties.StringProperty())])
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("over_16_chars_long_aaaaaaaaaaaaaaaaaaaa", [("id", stix2.properties.StringProperty())])
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("x-thing:noprops", [])
+        class CustomTargetInvalid(object):
+            pass
+
+
+
+def test_multiple_custom_targets():
+    @openc2.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty())])
+    class CustomTarget(object):
+        pass
+
+    @openc2.CustomTarget("x-thing:name", [("name", stix2.properties.StringProperty())])
+    class CustomTarget2(object):
+        pass
+
+    one = CustomTarget()
+    assert one != None  # for some reason `assert one` fails
+
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        CustomTarget(bad="id")
+
+    one = CustomTarget(id="uuid")
+    assert one
+    assert one.id == "uuid"
+
+    two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
+    assert one == two
+
+    with pytest.raises(stix2.exceptions.ParseError):
+        openc2.parse(one.serialize())
+
+    foo = CustomTarget2()
+    assert foo != None
+
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        CustomTarget2(bad="id")
+
+    one = CustomTarget2(name="name")
+    assert one
+    assert one.name == "name"
+
+    two = CustomTarget2(name=(json.loads(one.serialize())["x-thing:name"]))
+    assert one == two
+
+    with pytest.raises(stix2.exceptions.ParseError):
+        openc2.parse(one.serialize())
+
 
 def test_custom_target_required():
     @openc2.CustomTarget(
@@ -81,7 +144,9 @@ def test_custom_target_with_custom_property():
     class CustomTargetProperty(object):
         pass
 
-    @openc2.CustomTarget("x-thing:id", [("id", CustomTargetProperty(required=True))])
+    @openc2.CustomTarget(
+        "x-thing:id", [("id", CustomTargetProperty(required=True, default=lambda: {}))]
+    )
     class CustomTarget(object):
         pass
 
@@ -103,6 +168,7 @@ def test_custom_target_with_custom_property():
     # property with one value
 
     one = CustomTarget(id=CustomTargetProperty(name="name"))
+    assert one != None
     assert one.id.name == "name"
 
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
@@ -122,3 +188,23 @@ def test_custom_target_with_custom_property():
 
     two = CustomTarget(id=(json.loads(one.serialize())["x-thing:id"]))
     assert one == two
+
+    @openc2.CustomTarget(
+        "x-thing:list",
+        [("list", openc2.properties.EmptyListProperty(CustomTargetProperty))],
+    )
+    class CustomTarget2(object):
+        pass
+
+    foo = CustomTarget2()
+    assert foo != None
+
+    foo = CustomTarget2(
+        list=[CustomTargetProperty(name="name", uid="uid", version="version")]
+    )
+    assert foo != None
+    assert foo.list != None
+    assert foo.list[0] != None
+    assert foo.list[0].name == "name"
+    assert foo.list[0].uid == "uid"
+    assert foo.list[0].version == "version"

@@ -30,7 +30,7 @@
 """
 
 from collections import OrderedDict
-
+import stix2
 from stix2.base import _cls_init
 from .base import _OpenC2Base, _Target, _Actuator
 from .core import OPENC2_OBJ_MAPS, _register_extension
@@ -113,7 +113,7 @@ def _custom_args_builder(cls, type, properties, version):
 def _custom_property_builder(cls, type, properties, version):
     import stix2
 
-    class _CustomProperty(cls, _OpenC2Base):
+    class _CustomProperty(cls, _OpenC2Base, stix2.properties.Property):
 
         if not properties or not isinstance(properties, list):
             raise ValueError(
@@ -123,7 +123,9 @@ def _custom_property_builder(cls, type, properties, version):
         _type = type
         _properties = OrderedDict(properties)
 
-        def __init__(self, required=False, fixed=None, default=None, **kwargs):
+        def __init__(
+            self, required=False, fixed=None, default=None, allow_custom=False, **kwargs
+        ):
             self.required = required
             if fixed:
                 self._fixed_value = fixed
@@ -132,26 +134,22 @@ def _custom_property_builder(cls, type, properties, version):
             if default:
                 self.default = default
 
-            _OpenC2Base.__init__(self, **kwargs)
+            _OpenC2Base.__init__(self, allow_custom=allow_custom, **kwargs)
             _cls_init(cls, self, kwargs)
-
-        def _default_clean(self, value):
-            if value != self._fixed_value:
-                raise ValueError("must equal '{}'.".format(self._fixed_value))
-            return value
 
         def __setattr__(self, name, value):
             # _OpenC2Base is immutable so we have to override that functionality
             cls.__setattr__(self, name, value)
 
-        def clean(self, value):
-            return value
-
-        def __call__(self, value=None):
-            """Used by ListProperty to handle lists that have been defined with
+        def __call__(self, value=None, **kwargs):
+            """__init__ for when using an instance
+            Example: Used by ListProperty to handle lists that have been defined with
             either a class or an instance.
             """
-            return value
+            if value:
+                return value
+            v = self.__init__(**kwargs)
+            return self
 
     _register_extension(_CustomProperty, object_type="properties", version=version)
     return _CustomProperty
