@@ -28,6 +28,12 @@ def test_cmd_create():
     bar = openc2.parse(foo.serialize())
     assert foo == bar
 
+    d = json.loads(foo.serialize())
+    foo = openc2.core.dict_to_openc2(d)
+    d['invalid'] = {'bad':'value'}
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        openc2.core.dict_to_openc2(d)
+
     with pytest.raises(stix2.exceptions.InvalidValueError):
         openc2.Command(action="invalid", target=openc2.Features())
 
