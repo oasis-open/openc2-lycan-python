@@ -44,6 +44,27 @@ def test_custom_target():
     with pytest.raises(stix2.exceptions.ParseError):
         openc2.parse(one.serialize())
 
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("x-invalid", [("id", stix2.properties.StringProperty())])
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("invalid_target", [("id", stix2.properties.StringProperty())])
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("over_16_chars_long_aaaaaaaaaaaaaaaaaaaa", [("id", stix2.properties.StringProperty())])
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+        @openc2.CustomTarget("x-thing:noprops", [])
+        class CustomTargetInvalid(object):
+            pass
+
+
 
 def test_multiple_custom_targets():
     @openc2.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty())])
