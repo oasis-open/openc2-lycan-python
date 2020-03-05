@@ -30,7 +30,7 @@ def test_cmd_create():
 
     d = json.loads(foo.serialize())
     foo = openc2.core.dict_to_openc2(d)
-    d['invalid'] = {'bad':'value'}
+    d["invalid"] = {"bad": "value"}
     with pytest.raises(stix2.exceptions.ExtraPropertiesError):
         openc2.core.dict_to_openc2(d)
 

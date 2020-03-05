@@ -89,7 +89,17 @@ class EmailAddress(_Target):
 class Features(_Target):
     _type = "features"
     _properties = OrderedDict(
-        [("features", EmptyListProperty(properties.StringProperty, default=lambda: []))]
+        [
+            (
+                "features",
+                EmptyListProperty(
+                    properties.EnumProperty(
+                        allowed=["versions", "pairs", "profiles", "rate_limit"]
+                    ),
+                    default=lambda: [],
+                ),
+            )
+        ]
     )
 
     def __init__(self, features=None, *args, **kwargs):

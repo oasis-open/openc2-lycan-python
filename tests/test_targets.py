@@ -25,6 +25,7 @@ def test_ipv4_address_example():
     bar = openc2.core.parse_target(json.loads(ip4.serialize()))
     assert ip4 == bar
 
+
 def test_custom_target():
     @openc2.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty())])
     class CustomTarget(object):
