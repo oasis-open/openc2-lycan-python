@@ -28,7 +28,7 @@
 .. moduleauthor:: Michael Stair <mstair@att.com>
 
 """
-
+import stix2
 from stix2 import properties
 from ..base import _OpenC2Base, _Actuator, _Target
 from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
@@ -47,6 +47,15 @@ class SLPFActuator(_Actuator):
             ("asset_tuple", properties.ListProperty(properties.StringProperty)),
         ]
     )
+
+    def _check_object_constraints(self):
+        super(SLPFActuator, self)._check_object_constraints()
+
+        if "asset_tuple" in self:
+            if len(self.asset_tuple) > 10:
+                raise stix2.exceptions.InvalidValueError(
+                    self.__class__, "asset_tuple", "Maximum of 10 features allowed"
+                )
 
 
 class SLPFTarget(_Target):

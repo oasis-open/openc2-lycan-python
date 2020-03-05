@@ -82,3 +82,45 @@ def test_args_combination():
 
     with pytest.raises(stix2.exceptions.InvalidValueError):
         openc2.v10.Args(start_time=1, stop_time=0)
+
+def test_args_allow_custom():
+    a = openc2.v10.Args(duration=sys.maxsize)
+    foo = openc2.v10.Args(allow_custom=True, what="who", item=a)
+
+    with pytest.raises(AttributeError):
+        openc2.core.parse_args(foo.serialize())
+
+    with pytest.raises(stix2.exceptions.CustomContentError):
+        bar = openc2.core.parse_args(json.loads(foo.serialize()))
+
+    bar = openc2.core.parse_args(json.loads(foo.serialize()), allow_custom=True)
+    assert foo == bar
+
+def test_args_custom():
+    @openc2.CustomArgs("custom-args", [("id", stix2.properties.StringProperty())])
+    class MyCustomArgs(object):
+        pass
+
+    foo = MyCustomArgs(id="value")
+    assert foo.id == "value"
+
+    bar = openc2.core.parse_args(json.loads(foo.serialize()), allow_custom=True)
+    assert bar == foo
+
+    args = {"custom-args": json.loads(foo.serialize())}
+
+    bar = openc2.core.parse_args(args, allow_custom=True)
+    assert bar['custom-args'] == foo
+
+    args = {"bad-custom-args": json.loads(foo.serialize())}
+
+    with pytest.raises(stix2.exceptions.CustomContentError):
+        bar = openc2.core.parse_args(args)
+
+    args = {"custom-args": MyCustomArgs(id="value")}
+    bar = openc2.core.parse_args(args, allow_custom=True)
+
+    args = {"custom-args": openc2.Args(id="value", allow_custom=True)}
+    with pytest.raises(ValueError):
+        openc2.core.parse_args(args)
+

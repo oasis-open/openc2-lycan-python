@@ -22,6 +22,8 @@ def test_ipv4_address_example():
 
     assert excinfo.value.cls == openc2.v10.IPv4Address
 
+    bar = openc2.core.parse_target(json.loads(ip4.serialize()))
+    assert ip4 == bar
 
 def test_custom_target():
     @openc2.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty())])
@@ -45,25 +47,45 @@ def test_custom_target():
         openc2.parse(one.serialize())
 
     with pytest.raises(ValueError):
+
         @openc2.CustomTarget("x-invalid", [("id", stix2.properties.StringProperty())])
         class CustomTargetInvalid(object):
             pass
 
     with pytest.raises(ValueError):
-        @openc2.CustomTarget("invalid_target", [("id", stix2.properties.StringProperty())])
+
+        @openc2.CustomTarget(
+            "invalid_target", [("id", stix2.properties.StringProperty())]
+        )
         class CustomTargetInvalid(object):
             pass
 
     with pytest.raises(ValueError):
-        @openc2.CustomTarget("over_16_chars_long_aaaaaaaaaaaaaaaaaaaa", [("id", stix2.properties.StringProperty())])
+
+        @openc2.CustomTarget(
+            "over_16_chars_long_aaaaaaaaaaaaaaaaaaaa",
+            [("id", stix2.properties.StringProperty())],
+        )
         class CustomTargetInvalid(object):
             pass
 
     with pytest.raises(ValueError):
+
         @openc2.CustomTarget("x-thing:noprops", [])
         class CustomTargetInvalid(object):
             pass
 
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        v = """{ "target": {"x-custom": "value"}, "action":"query"}"""
+        openc2.core.parse(v)
+
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        v = """{ "target": {"x-custom:id": "value"}, "action":"query"}"""
+        openc2.core.parse(v)
+
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        v = """{ "target": {}, "action":"query"}"""
+        openc2.core.parse(v)
 
 
 def test_multiple_custom_targets():
