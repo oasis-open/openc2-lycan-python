@@ -99,6 +99,13 @@ def test_args_allow_custom():
 
 
 def test_args_custom():
+    @openc2.CustomArgs("custom-args", [("type", stix2.properties.StringProperty())])
+    class MyCustomArgs(object):
+        pass
+
+    with pytest.raises(stix2.exceptions.PropertyPresenceError):
+        MyCustomArgs(type="hello")
+
     @openc2.CustomArgs("custom-args", [("id", stix2.properties.StringProperty())])
     class MyCustomArgs(object):
         pass

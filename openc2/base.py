@@ -29,6 +29,7 @@
 
 """
 
+import stix2
 from stix2.base import _STIXBase, STIXJSONEncoder
 import copy
 import json
@@ -75,6 +76,13 @@ class _OpenC2Base(_STIXBase):
             return self._type
         else:
             return super(_OpenC2Base, self).__getitem__(key)
+
+    def _check_property(self, prop_name, prop, kwargs):
+        if prop_name == "type":
+            raise stix2.exceptions.PropertyPresenceError(
+                "type is reserved", self.__class__
+            )
+        super(_OpenC2Base, self)._check_property(prop_name, prop, kwargs)
 
 
 class _OpenC2DataType(_OpenC2Base):
