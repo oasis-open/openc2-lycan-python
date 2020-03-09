@@ -18,6 +18,13 @@ def test_args_response_requested():
         openc2.v10.Args(response_requested="bad")
 
 
+def test_args_property():
+    foo = openc2.properties.ArgsProperty()
+    assert foo.clean({"duration": 500})
+    with pytest.raises(ValueError):
+        foo.clean("bad")
+
+
 def test_args_start_time():
     # Value is the number of milliseconds since 00:00:00 UTC, 1 January 1970
 
