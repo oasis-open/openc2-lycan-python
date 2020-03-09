@@ -15,6 +15,18 @@ def test_args_custom_invalid_property():
         class MyCustomProp(object):
             pass
 
+    with pytest.raises(TypeError):
+
+        @openc2.properties.CustomProperty("x-custom-property", None)
+        class MyCustomProp(object):
+            pass
+
+    with pytest.raises(ValueError):
+
+        @openc2.properties.CustomProperty("x-custom-property", [])
+        class MyCustomProp(object):
+            pass
+
 
 def test_args_custom_embed_property():
     @openc2.properties.CustomProperty(
@@ -35,6 +47,9 @@ def test_args_custom_embed_property():
     assert len(foo.value) > 0
     assert foo.value[0] != None
     assert foo.value[0].value == "my_value"
+
+    bar = foo(_value=foo)
+    assert bar == foo
 
     foo = MyCustomProp(value=[MyCustomPropInner(value="my_value")])
     assert foo != None
