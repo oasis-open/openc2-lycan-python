@@ -37,9 +37,6 @@ from .core import OPENC2_OBJ_MAPS, _register_extension
 
 
 def _check_custom_properties(cls, properties):
-    if "value" in properties.keys():
-        raise stix2.exceptions.PropertyPresenceError("'value' is reserved", cls)
-
     if "type" in properties.keys():
         raise stix2.exceptions.PropertyPresenceError("'type' is reserved", cls)
 
@@ -158,13 +155,13 @@ def _custom_property_builder(cls, type, properties, version):
             # _OpenC2Base is immutable so we have to override that functionality
             cls.__setattr__(self, name, value)
 
-        def __call__(self, value=None, **kwargs):
+        def __call__(self, _value=None, **kwargs):
             """__init__ for when using an instance
             Example: Used by ListProperty to handle lists that have been defined with
             either a class or an instance.
             """
-            if value:
-                return value
+            if _value:
+                return _value
             v = self.__init__(**kwargs)
             return self
 
