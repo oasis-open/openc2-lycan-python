@@ -76,6 +76,7 @@ class _OpenC2Base(_STIXBase):
         else:
             return super(_OpenC2Base, self).__getitem__(key)
 
+
 class _OpenC2DataType(_OpenC2Base):
     pass
 

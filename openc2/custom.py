@@ -38,25 +38,23 @@ from .core import OPENC2_OBJ_MAPS, _register_extension
 
 def _check_custom_properties(cls, properties):
     if "value" in properties.keys():
-        raise stix2.exceptions.PropertyPresenceError(
-            "'value' is reserved", cls
-        )
+        raise stix2.exceptions.PropertyPresenceError("'value' is reserved", cls)
 
     if "type" in properties.keys():
-        raise stix2.exceptions.PropertyPresenceError(
-            "'type' is reserved", cls
-        )
+        raise stix2.exceptions.PropertyPresenceError("'type' is reserved", cls)
+
 
 def _custom_target_builder(cls, type, properties, version):
     class _CustomTarget(cls, _Target):
 
         try:
             nsid, target = type.split(":")
-        except IndexError:
+        except ValueError:
             raise ValueError(
                 "Invalid Extended Target name '%s': must be namespace:target format"
                 % type
             )
+
         if len(nsid) > 16:
             raise ValueError(
                 "Invalid namespace '%s': must be less than 16 characters" % type
