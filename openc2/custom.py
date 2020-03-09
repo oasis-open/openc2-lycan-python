@@ -36,6 +36,17 @@ from .base import _OpenC2Base, _Target, _Actuator
 from .core import OPENC2_OBJ_MAPS, _register_extension
 
 
+def _check_custom_properties(cls, properties):
+    if "value" in properties.keys():
+        raise stix2.exceptions.PropertyPresenceError(
+            "'value' is reserved", cls
+        )
+
+    if "type" in properties.keys():
+        raise stix2.exceptions.PropertyPresenceError(
+            "'type' is reserved", cls
+        )
+
 def _custom_target_builder(cls, type, properties, version):
     class _CustomTarget(cls, _Target):
 
@@ -58,6 +69,8 @@ def _custom_target_builder(cls, type, properties, version):
 
         _type = type
         _properties = OrderedDict(properties)
+
+        _check_custom_properties(cls, _properties)
 
         def __init__(self, **kwargs):
             _Target.__init__(self, **kwargs)
@@ -83,6 +96,8 @@ def _custom_actuator_builder(cls, type, properties, version):
         _type = type
         _properties = OrderedDict(properties)
 
+        _check_custom_properties(cls, _properties)
+
         def __init__(self, **kwargs):
             _Actuator.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
@@ -101,6 +116,8 @@ def _custom_args_builder(cls, type, properties, version):
 
         _type = type
         _properties = OrderedDict(properties)
+
+        _check_custom_properties(cls, _properties)
 
         def __init__(self, **kwargs):
             _OpenC2Base.__init__(self, **kwargs)
@@ -122,6 +139,8 @@ def _custom_property_builder(cls, type, properties, version):
 
         _type = type
         _properties = OrderedDict(properties)
+
+        _check_custom_properties(cls, _properties)
 
         def __init__(
             self, required=False, fixed=None, default=None, allow_custom=False, **kwargs
