@@ -87,10 +87,10 @@ class HashesProperty(DictionaryProperty):
 
 
 class ComponentProperty(Property):
-    def __init__(self, allow_custom=False, *args, **kwargs):
+    def __init__(self, component_type=None, allow_custom=False, *args, **kwargs):
         super(ComponentProperty, self).__init__(*args, **kwargs)
         self.allow_custom = allow_custom
-        self._component_type = None
+        self._component_type = component_type
 
     def clean(self, value):
         if not self._component_type:
@@ -113,16 +113,16 @@ class ComponentProperty(Property):
 
 class TargetProperty(ComponentProperty):
     def __init__(self, allow_custom=False, *args, **kwargs):
-        super(TargetProperty, self).__init__(allow_custom, *args, **kwargs)
-        self.allow_custom = allow_custom
-        self._component_type = "targets"
+        super(TargetProperty, self).__init__(
+            allow_custom=allow_custom, component_type="targets", *args, **kwargs
+        )
 
 
 class ActuatorProperty(ComponentProperty):
     def __init__(self, allow_custom=False, *args, **kwargs):
-        super(ActuatorProperty, self).__init__(allow_custom, *args, **kwargs)
-        self.allow_custom = allow_custom
-        self._component_type = "actuators"
+        super(ActuatorProperty, self).__init__(
+            allow_custom=allow_custom, component_type="actuators", *args, **kwargs
+        )
 
 
 class ArgsProperty(DictionaryProperty):
