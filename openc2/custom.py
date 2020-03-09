@@ -168,12 +168,5 @@ def _custom_property_builder(cls, type, properties, version):
             v = self.__init__(**kwargs)
             return self
 
-        def _check_property(self, prop_name, prop, kwargs):
-            if prop_name == "value":
-                raise stix2.exceptions.PropertyPresenceError(
-                    "value is reserved", self.__class__
-                )
-            _OpenC2Base._check_property(self, prop_name, prop, kwargs)
-
     _register_extension(_CustomProperty, object_type="properties", version=version)
     return _CustomProperty
