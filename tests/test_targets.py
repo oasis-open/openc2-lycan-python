@@ -64,7 +64,30 @@ def test_custom_target():
     with pytest.raises(ValueError):
 
         @openc2.CustomTarget(
-            "over_16_chars_long_aaaaaaaaaaaaaaaaaaaa",
+            "over_16_chars_long_aaaaaaaaaaaaaaaaaaaa123",
+            [("id", stix2.properties.StringProperty())],
+        )
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(TypeError):
+
+        @openc2.CustomTarget(
+            "x-custom:id", ("id", stix2.properties.StringProperty()),
+        )
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(TypeError):
+
+        @openc2.CustomTarget("x-custom:id")
+        class CustomTargetInvalid(object):
+            pass
+
+    with pytest.raises(ValueError):
+
+        @openc2.CustomTarget(
+            "x-over_16_chars_long_aaaaaaaaaaaaaaaaaaaa:id",
             [("id", stix2.properties.StringProperty())],
         )
         class CustomTargetInvalid(object):

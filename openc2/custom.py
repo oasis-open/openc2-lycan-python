@@ -36,16 +36,22 @@ from .base import _OpenC2Base, _Target, _Actuator
 from .core import OPENC2_OBJ_MAPS, _register_extension
 
 
+def _check_custom_properties(cls, properties):
+    if "type" in properties.keys():
+        raise stix2.exceptions.PropertyPresenceError("'type' is reserved", cls)
+
+
 def _custom_target_builder(cls, type, properties, version):
     class _CustomTarget(cls, _Target):
 
         try:
             nsid, target = type.split(":")
-        except IndexError:
+        except ValueError:
             raise ValueError(
                 "Invalid Extended Target name '%s': must be namespace:target format"
                 % type
             )
+
         if len(nsid) > 16:
             raise ValueError(
                 "Invalid namespace '%s': must be less than 16 characters" % type
@@ -58,6 +64,8 @@ def _custom_target_builder(cls, type, properties, version):
 
         _type = type
         _properties = OrderedDict(properties)
+
+        _check_custom_properties(cls, _properties)
 
         def __init__(self, **kwargs):
             _Target.__init__(self, **kwargs)
@@ -83,6 +91,8 @@ def _custom_actuator_builder(cls, type, properties, version):
         _type = type
         _properties = OrderedDict(properties)
 
+        _check_custom_properties(cls, _properties)
+
         def __init__(self, **kwargs):
             _Actuator.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
@@ -101,6 +111,8 @@ def _custom_args_builder(cls, type, properties, version):
 
         _type = type
         _properties = OrderedDict(properties)
+
+        _check_custom_properties(cls, _properties)
 
         def __init__(self, **kwargs):
             _OpenC2Base.__init__(self, **kwargs)
@@ -123,6 +135,8 @@ def _custom_property_builder(cls, type, properties, version):
         _type = type
         _properties = OrderedDict(properties)
 
+        _check_custom_properties(cls, _properties)
+
         def __init__(
             self, required=False, fixed=None, default=None, allow_custom=False, **kwargs
         ):
@@ -141,13 +155,13 @@ def _custom_property_builder(cls, type, properties, version):
             # _OpenC2Base is immutable so we have to override that functionality
             cls.__setattr__(self, name, value)
 
-        def __call__(self, value=None, **kwargs):
+        def __call__(self, _value=None, **kwargs):
             """__init__ for when using an instance
             Example: Used by ListProperty to handle lists that have been defined with
             either a class or an instance.
             """
-            if value:
-                return value
+            if _value:
+                return _value
             v = self.__init__(**kwargs)
             return self
 
