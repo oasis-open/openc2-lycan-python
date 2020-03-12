@@ -162,8 +162,7 @@ def _custom_property_builder(cls, type, properties, version):
             """
             if _value:
                 return _value
-            v = self.__init__(**kwargs)
-            return self
+            return self.__class__(**kwargs)
 
     _register_extension(_CustomProperty, object_type="properties", version=version)
     return _CustomProperty
