@@ -57,18 +57,35 @@ def test_args_custom_embed_property():
     assert foo.value[0] != None
     assert foo.value[0].value == "my_value"
 
+    foo2 = MyCustomProp(value=[MyCustomPropInner(value="my_value2")])
+    assert foo2 != None
+    assert len(foo2.value) > 0
+    assert foo2.value[0] != None
+    assert foo2.value[0].value == "my_value2"
+
+    assert foo != foo2
+
     @openc2.CustomArgs(
         "x-custom", [("value", stix2.properties.ListProperty(MyCustomProp))]
     )
     class MyCustomArgs(object):
         pass
 
-    print("bfoo", foo.serialize())
-    foo = MyCustomArgs(value=[foo])
-    print("foo", foo.serialize())
-    assert foo != None
+    bar = MyCustomArgs(value=[foo])
+    assert bar != None
     assert len(foo.value) > 0
-    assert foo.value[0] != None
-    assert len(foo.value[0].value) > 0
-    assert foo.value[0].value[0] != None
-    assert foo.value[0].value[0].value == "my_value"
+    assert bar.value[0] != None
+    assert len(bar.value[0].value) > 0
+    assert bar.value[0].value[0] != None
+    assert bar.value[0].value[0].value == "my_value"
+
+    bar = MyCustomArgs(value=[foo, foo2])
+    print('bar', bar.serialize())
+    assert bar != None
+    assert len(foo.value) > 0
+    assert bar.value[0] != None
+    assert len(bar.value[0].value) > 0
+    assert bar.value[0].value[0] != None
+    assert bar.value[0].value[0].value == "my_value"
+    assert bar.value[1].value[0] != None
+    assert bar.value[1].value[0].value == "my_value2"
