@@ -29,30 +29,21 @@
 
 """
 
-import stix2.exceptions
-from stix2 import properties
-from ..properties import (
-    PayloadProperty,
-    HashesProperty,
-    ProcessProperty,
-    FileProperty,
-    EmptyListProperty,
-)
-from ..base import _Target, OpenC2JSONEncoder
-from ..custom import _custom_target_builder
+
+import openc2
 
 import itertools
 import copy
 from collections import OrderedDict
 
 
-class Artifact(_Target):
+class Artifact(openc2.base._Target):
     _type = "artifact"
     _properties = OrderedDict(
         [
-            ("mime_type", properties.StringProperty()),
-            ("payload", PayloadProperty()),
-            ("hashes", HashesProperty()),
+            ("mime_type", openc2.properties.StringProperty()),
+            ("payload", openc2.properties.PayloadProperty()),
+            ("hashes", openc2.properties.HashesProperty()),
         ]
     )
 
@@ -61,39 +52,39 @@ class Artifact(_Target):
         self._check_at_least_one_property()
 
 
-class Device(_Target):
+class Device(openc2.base._Target):
     _type = "device"
     _properties = OrderedDict(
         [
-            ("hostname", properties.StringProperty()),
-            ("idn_hostname", properties.StringProperty()),
-            ("device_id", properties.StringProperty()),
+            ("hostname", openc2.properties.StringProperty()),
+            ("idn_hostname",openc2.properties.StringProperty()),
+            ("device_id",openc2.properties.StringProperty()),
         ]
     )
 
 
-class DomainName(_Target):
+class DomainName(openc2.base._Target):
     _type = "domain_name"
     _properties = OrderedDict(
-        [("domain_name", properties.StringProperty(required=True)),]
+        [("domain_name", openc2.properties.StringProperty(required=True)),]
     )
 
 
-class EmailAddress(_Target):
+class EmailAddress(openc2.base._Target):
     _type = "email_addr"
     _properties = OrderedDict(
-        [("email_addr", properties.StringProperty(required=True)),]
+        [("email_addr", openc2.properties.StringProperty(required=True)),]
     )
 
 
-class Features(_Target):
+class Features(openc2.base._Target):
     _type = "features"
     _properties = OrderedDict(
         [
             (
                 "features",
-                EmptyListProperty(
-                    properties.EnumProperty(
+                openc2.properties.ListProperty(
+                    openc2.properties.EnumProperty(
                         allowed=["versions", "pairs", "profiles", "rate_limit"]
                     ),
                     default=lambda: [],
@@ -110,13 +101,13 @@ class Features(_Target):
         super(Features, self)._check_object_constraints()
 
         if len(self.features) > 10:
-            raise stix2.exceptions.InvalidValueError(
+            raise openc2.exceptions.InvalidValueError(
                 self.__class__, "features", "Maximum of 10 features allowed"
             )
         seen = []
         for feature in self.features:
             if feature in seen:
-                raise stix2.exceptions.InvalidValueError(
+                raise openc2.exceptions.InvalidValueError(
                     self.__class__,
                     "features",
                     "A Producer MUST NOT send a list containing more than one instance of any Feature.",
@@ -124,13 +115,13 @@ class Features(_Target):
             seen.append(feature)
 
 
-class File(_Target):
+class File(openc2.base._Target):
     _type = "file"
     _properties = OrderedDict(
         [
-            ("name", properties.StringProperty()),
-            ("path", properties.StringProperty()),
-            ("hashes", HashesProperty()),
+            ("name", openc2.properties.StringProperty()),
+            ("path", openc2.properties.StringProperty()),
+            ("hashes", openc2.properties.HashesProperty()),
         ]
     )
 
@@ -139,41 +130,41 @@ class File(_Target):
         self._check_at_least_one_property()
 
 
-class InternationalizedDomainName(_Target):
+class InternationalizedDomainName(openc2.base._Target):
     _type = "idn_domain_name"
     _properties = OrderedDict(
-        [("idn_domain_name", properties.StringProperty(required=True)),]
+        [("idn_domain_name", openc2.properties.StringProperty(required=True)),]
     )
 
 
-class InternationalizedEmailAddress(_Target):
+class InternationalizedEmailAddress(openc2.base._Target):
     _type = "idn_email_addr"
     _properties = OrderedDict(
-        [("idn_email_addr", properties.StringProperty(required=True)),]
+        [("idn_email_addr", openc2.properties.StringProperty(required=True)),]
     )
 
 
-class IPv4Address(_Target):
+class IPv4Address(openc2.base._Target):
     _type = "ipv4_net"
-    _properties = OrderedDict([("ipv4_net", properties.StringProperty(required=True)),])
+    _properties = OrderedDict([("ipv4_net", openc2.properties.StringProperty(required=True)),])
 
 
-class IPv6Address(_Target):
+class IPv6Address(openc2.base._Target):
     _type = "ipv6_net"
-    _properties = OrderedDict([("ipv6_net", properties.StringProperty(required=True)),])
+    _properties = OrderedDict([("ipv6_net", openc2.properties.StringProperty(required=True)),])
 
 
-class IPv4Connection(_Target):
+class IPv4Connection(openc2.base._Target):
     _type = "ipv4_connection"
     _properties = OrderedDict(
         [
-            ("src_addr", properties.StringProperty()),
-            ("src_port", properties.IntegerProperty(min=0, max=65535)),
-            ("dst_addr", properties.StringProperty()),
-            ("dst_port", properties.IntegerProperty(min=0, max=65535)),
+            ("src_addr", openc2.properties.StringProperty()),
+            ("src_port", openc2.properties.IntegerProperty(min=0, max=65535)),
+            ("dst_addr",openc2.properties.StringProperty()),
+            ("dst_port",openc2.properties.IntegerProperty(min=0, max=65535)),
             (
                 "protocol",
-                properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
+               openc2.properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
             ),
         ]
     )
@@ -183,17 +174,17 @@ class IPv4Connection(_Target):
         self._check_at_least_one_property()
 
 
-class IPv6Connection(_Target):
+class IPv6Connection(openc2.base._Target):
     _type = "ipv6_connection"
     _properties = OrderedDict(
         [
-            ("src_addr", properties.StringProperty()),
-            ("src_port", properties.IntegerProperty(min=0, max=65535)),
-            ("dst_addr", properties.StringProperty()),
-            ("dst_port", properties.IntegerProperty(min=0, max=65535)),
+            ("src_addr",openc2.properties.StringProperty()),
+            ("src_port",openc2.properties.IntegerProperty(min=0, max=65535)),
+            ("dst_addr",openc2.properties.StringProperty()),
+            ("dst_port",openc2.properties.IntegerProperty(min=0, max=65535)),
             (
                 "protocol",
-                properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
+               openc2.properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
             ),
         ]
     )
@@ -203,26 +194,26 @@ class IPv6Connection(_Target):
         self._check_at_least_one_property()
 
 
-class IRI(_Target):
+class IRI(openc2.base._Target):
     _type = "iri"
-    _properties = OrderedDict([("iri", properties.StringProperty(required=True)),])
+    _properties = OrderedDict([("iri",openc2.properties.StringProperty(required=True)),])
 
 
-class MACAddress(_Target):
+class MACAddress(openc2.base._Target):
     _type = "mac_addr"
-    _properties = OrderedDict([("mac_addr", properties.StringProperty(required=True)),])
+    _properties = OrderedDict([("mac_addr",openc2.properties.StringProperty(required=True)),])
 
 
-class Process(_Target):
+class Process(openc2.base._Target):
     _type = "process"
     _properties = OrderedDict(
         [
-            ("pid", properties.IntegerProperty()),
-            ("name", properties.StringProperty()),
-            ("cwd", properties.StringProperty()),
-            ("executable", FileProperty()),
-            ("parent", ProcessProperty()),
-            ("command_line", properties.StringProperty()),
+            ("pid",openc2.properties.IntegerProperty()),
+            ("name",openc2.properties.StringProperty()),
+            ("cwd",openc2.properties.StringProperty()),
+            ("executable", openc2.properties.FileProperty()),
+            ("parent", openc2.properties.ProcessProperty()),
+            ("command_line",openc2.properties.StringProperty()),
         ]
     )
 
@@ -248,16 +239,16 @@ class Process(_Target):
             self._inner["executable"] = dictified
 
 
-class Properties(_Target):
+class Properties(openc2.base._Target):
     _type = "properties"
     _properties = OrderedDict(
-        [("properties", properties.ListProperty(properties.StringProperty)),]
+        [("properties",openc2.properties.ListProperty(openc2.properties.StringProperty)),]
     )
 
 
-class URI(_Target):
+class URI(openc2.base._Target):
     _type = "uri"
-    _properties = OrderedDict([("uri", properties.StringProperty(required=True)),])
+    _properties = OrderedDict([("uri",openc2.properties.StringProperty(required=True)),])
 
 
 def CustomTarget(type="x-acme", properties=None):
@@ -273,6 +264,6 @@ def CustomTarget(type="x-acme", properties=None):
                 ]
             )
         )
-        return _custom_target_builder(cls, type, _properties, "2.1")
+        return openc2.custom._custom_target_builder(cls, type, _properties, "2.1")
 
     return wrapper

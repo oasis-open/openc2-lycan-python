@@ -2,15 +2,14 @@ import openc2
 import pytest
 import json
 import sys
-import stix2.exceptions
 
 
 def test_args_custom_invalid_property():
 
-    with pytest.raises(stix2.exceptions.PropertyPresenceError):
+    with pytest.raises(openc2.exceptions.PropertyPresenceError):
 
         @openc2.properties.CustomProperty(
-            "x-custom-property", [("type", stix2.properties.StringProperty())]
+            "x-custom-property", [("type", openc2.properties.StringProperty())]
         )
         class MyCustomProp(object):
             pass
@@ -30,14 +29,14 @@ def test_args_custom_invalid_property():
 
 def test_args_custom_embed_property():
     @openc2.properties.CustomProperty(
-        "x-custom-property-inner", [("value", stix2.properties.StringProperty())]
+        "x-custom-property-inner", [("value", openc2.properties.StringProperty())]
     )
     class MyCustomPropInner(object):
         pass
 
     @openc2.properties.CustomProperty(
         "x-custom-property",
-        [("value", stix2.properties.ListProperty(MyCustomPropInner))],
+        [("value", openc2.properties.ListProperty(MyCustomPropInner))],
     )
     class MyCustomProp(object):
         pass
@@ -65,8 +64,8 @@ def test_args_custom_embed_property():
 
     assert foo != foo2
 
-    @openc2.CustomArgs(
-        "x-custom", [("value", stix2.properties.ListProperty(MyCustomProp))]
+    @openc2.v10.CustomArgs(
+        "x-custom", [("value", openc2.properties.ListProperty(MyCustomProp))]
     )
     class MyCustomArgs(object):
         pass

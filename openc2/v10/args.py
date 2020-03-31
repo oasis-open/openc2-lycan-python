@@ -28,25 +28,23 @@
 .. moduleauthor:: Michael Stair <mstair@att.com>
 
 """
-import stix2.exceptions
-from stix2 import properties
-from ..base import _OpenC2Base
+import openc2
 from ..custom import _custom_args_builder
 
 import itertools
 from collections import OrderedDict
 
 
-class Args(_OpenC2Base):
+class Args(openc2.base._OpenC2Base):
     _type = "args"
     _properties = OrderedDict(
         [
-            ("start_time", properties.IntegerProperty(min=0)),
-            ("stop_time", properties.IntegerProperty(min=0)),
-            ("duration", properties.IntegerProperty(min=0)),
+            ("start_time", openc2.properties.IntegerProperty(min=0)),
+            ("stop_time", openc2.properties.IntegerProperty(min=0)),
+            ("duration", openc2.properties.IntegerProperty(min=0)),
             (
                 "response_requested",
-                properties.EnumProperty(allowed=["none", "ack", "status", "complete"]),
+                openc2.properties.EnumProperty(allowed=["none", "ack", "status", "complete"]),
             ),
         ]
     )
@@ -54,14 +52,14 @@ class Args(_OpenC2Base):
     def _check_object_constraints(self):
         super(Args, self)._check_object_constraints()
         if "stop_time" in self and "start_time" in self and "duration" in self:
-            raise stix2.exceptions.PropertyPresenceError(
+            raise openc2.exceptions.PropertyPresenceError(
                 "start_time, stop_time, duration: Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.",
                 self.__class__,
             )
 
         if "stop_time" in self and "start_time" in self:
             if self.stop_time < self.start_time:
-                raise stix2.exceptions.InvalidValueError(
+                raise openc2.exceptions.InvalidValueError(
                     self.__class__,
                     "stop_time",
                     reason="stop_time must be greater than start_time",

@@ -2,25 +2,24 @@ import openc2
 import pytest
 import json
 import sys
-import stix2
 
 
 def test_response_create():
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
-        openc2.Response()
+    with pytest.raises(openc2.exceptions.MissingPropertiesError):
+        openc2.v10.Response()
 
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
-        openc2.Response(results={})
+    with pytest.raises(openc2.exceptions.MissingPropertiesError):
+        openc2.v10.Response(results={})
 
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
-        openc2.Response(status_text="Ok.")
+    with pytest.raises(openc2.exceptions.MissingPropertiesError):
+        openc2.v10.Response(status_text="Ok.")
 
-    foo = openc2.Response(status=200)
+    foo = openc2.v10.Response(status=200)
     assert foo
     assert foo.status == 200
     assert foo.serialize() == '{"status": 200}'
 
-    bar = openc2.Response(**json.loads(foo.serialize()))
+    bar = openc2.v10.Response(**json.loads(foo.serialize()))
     assert bar == foo
 
     bar = openc2.parse({"status": 200})

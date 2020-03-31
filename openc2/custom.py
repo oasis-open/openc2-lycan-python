@@ -30,15 +30,20 @@
 """
 
 from collections import OrderedDict
-import stix2
-from stix2.base import _cls_init
 from .base import _OpenC2Base, _Target, _Actuator
 from .core import OPENC2_OBJ_MAPS, _register_extension
+from . import exceptions
+from . import properties as openc2_properties
+
+
+def _cls_init(cls, obj, kwargs):
+    if getattr(cls, "__init__", object.__init__) is not object.__init__:
+        cls.__init__(obj, **kwargs)
 
 
 def _check_custom_properties(cls, properties):
     if "type" in properties.keys():
-        raise stix2.exceptions.PropertyPresenceError("'type' is reserved", cls)
+        raise exceptions.PropertyPresenceError("'type' is reserved", cls)
 
 
 def _custom_target_builder(cls, type, properties, version):
@@ -123,9 +128,7 @@ def _custom_args_builder(cls, type, properties, version):
 
 
 def _custom_property_builder(cls, type, properties, version):
-    import stix2
-
-    class _CustomProperty(cls, _OpenC2Base, stix2.properties.Property):
+    class _CustomProperty(cls, _OpenC2Base, openc2_properties.Property):
 
         if not properties or not isinstance(properties, list):
             raise ValueError(

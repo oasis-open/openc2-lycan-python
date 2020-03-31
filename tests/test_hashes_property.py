@@ -2,7 +2,6 @@ import openc2
 import pytest
 import json
 import sys
-import stix2.exceptions
 
 
 def test_hash_property():

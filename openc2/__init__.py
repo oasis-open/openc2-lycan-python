@@ -29,8 +29,19 @@
 
 """
 
-from .v10 import *
-from .core import _collect_openc2_mappings, parse
+
+from .core import _collect_openc2_mappings
 from .version import __version__
+
+from . import exceptions
+from . import core
+from . import base
+from . import utils
+from .utils import parse
+from . import properties
+from . import custom
+
+from . import v10
+
 
 _collect_openc2_mappings()

@@ -28,24 +28,283 @@
 .. moduleauthor:: Michael Stair <mstair@att.com>
 
 """
-
-from stix2 import properties
-from stix2.properties import Property, DictionaryProperty
-from stix2.utils import _get_dict
+import six
+import base64
 from .base import _OpenC2Base
-from .core import parse_component, parse_args, _get_data_info
-from .v10.common import Payload
 from collections import OrderedDict
 from .custom import _custom_property_builder
+from . import utils
+from . import exceptions
 import re, inspect
 import itertools
 import copy
 from collections import OrderedDict
 
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
+
+class Property(object):
+    """Represent a property of STIX data type.
+    Subclasses can define the following attributes as keyword arguments to
+    ``__init__()``.
+    Args:
+        required (bool): If ``True``, the property must be provided when
+            creating an object with that property. No default value exists for
+            these properties. (Default: ``False``)
+        fixed: This provides a constant default value. Users are free to
+            provide this value explicity when constructing an object (which
+            allows you to copy **all** values from an existing object to a new
+            object), but if the user provides a value other than the ``fixed``
+            value, it will raise an error. This is semantically equivalent to
+            defining both:
+            - a ``clean()`` function that checks if the value matches the fixed
+              value, and
+            - a ``default()`` function that returns the fixed value.
+    Subclasses can also define the following functions:
+    - ``def clean(self, value) -> any:``
+        - Return a value that is valid for this property. If ``value`` is not
+          valid for this property, this will attempt to transform it first. If
+          ``value`` is not valid and no such transformation is possible, it
+          should raise an exception.
+    - ``def default(self):``
+        - provide a default value for this property.
+        - ``default()`` can return the special value ``NOW`` to use the current
+            time. This is useful when several timestamps in the same object
+            need to use the same default value, so calling now() for each
+            property-- likely several microseconds apart-- does not work.
+    Subclasses can instead provide a lambda function for ``default`` as a
+    keyword argument. ``clean`` should not be provided as a lambda since
+    lambdas cannot raise their own exceptions.
+    When instantiating Properties, ``required`` and ``default`` should not be
+    used together. ``default`` implies that the property is required in the
+    specification so this function will be used to supply a value if none is
+    provided. ``required`` means that the user must provide this; it is
+    required in the specification and we can't or don't want to create a
+    default value.
+    """
+
+    def _default_clean(self, value):
+        if value != self._fixed_value:
+            raise ValueError("must equal '{}'.".format(self._fixed_value))
+        return value
+
+    def __init__(self, required=False, fixed=None, default=None):
+        self.required = required
+        if fixed:
+            self._fixed_value = fixed
+            self.clean = self._default_clean
+            self.default = lambda: fixed
+        if default:
+            self.default = default
+
+    def clean(self, value):
+        return value
+
+    def __call__(self, value=None):
+        """Used by ListProperty to handle lists that have been defined with
+        either a class or an instance.
+        """
+        return value
+
+class EmbeddedObjectProperty(Property):
+
+    def __init__(self, type, **kwargs):
+        self.type = type
+        super(EmbeddedObjectProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        if type(value) is dict:
+            value = self.type(**value)
+        elif not isinstance(value, self.type):
+            raise ValueError("must be of type {}.".format(self.type.__name__))
+        return value
+
+class ListProperty(Property):
+    def __init__(self, contained, **kwargs):
+        """
+        ``contained`` should be a function which returns an object from the value.
+        """
+        if inspect.isclass(contained) and issubclass(contained, Property):
+            # If it's a class and not an instance, instantiate it so that
+            # clean() can be called on it, and ListProperty.clean() will
+            # use __call__ when it appends the item.
+            self.contained = contained()
+        else:
+            self.contained = contained
+        super(ListProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        try:
+            iter(value)
+        except TypeError:
+            raise ValueError("must be an iterable.")
+
+        if isinstance(value, (_OpenC2Base, six.string_types)):
+            value = [value]
+
+        result = []
+        for item in value:
+            try:
+                valid = self.contained.clean(item)
+            except ValueError:
+                raise
+            except AttributeError:
+                # type of list has no clean() function (eg. built in Python types)
+                # TODO Should we raise an error here?
+                valid = item
+
+            if type(self.contained) is EmbeddedObjectProperty:
+                obj_type = self.contained.type
+            elif type(self.contained) is DictionaryProperty:
+                obj_type = dict
+            else:
+                obj_type = self.contained
+
+            if isinstance(valid, Mapping):
+                try:
+                    valid._allow_custom
+                except AttributeError:
+                    result.append(obj_type(**valid))
+                else:
+                    result.append(obj_type(allow_custom=True, **valid))
+            else:
+                result.append(obj_type(valid))
+
+        return result
+
+
+class StringProperty(Property):
+    def __init__(self, **kwargs):
+        super(StringProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        if not isinstance(value, six.string_types):
+            return six.text_type(value)
+        return value
+
+class EnumProperty(StringProperty):
+
+    def __init__(self, allowed, **kwargs):
+        if type(allowed) is not list:
+            allowed = list(allowed)
+        self.allowed = allowed
+        super(EnumProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        cleaned_value = super(EnumProperty, self).clean(value)
+        if cleaned_value not in self.allowed:
+            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+
+        return cleaned_value
+
+class BinaryProperty(Property):
+
+    def clean(self, value):
+        try:
+            base64.b64decode(value)
+        except (binascii.Error, TypeError):
+            raise ValueError("must contain a base64 encoded string")
+        return value
+
+class TypeProperty(Property):
+    def __init__(self, type):
+        super(TypeProperty, self).__init__(fixed=type)
+
+
+class IntegerProperty(Property):
+    def __init__(self, min=None, max=None, **kwargs):
+        self.min = min
+        self.max = max
+        super(IntegerProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        try:
+            value = int(value)
+        except Exception:
+            raise ValueError("must be an integer.")
+
+        if self.min is not None and value < self.min:
+            msg = "minimum value is {}. received {}".format(self.min, value)
+            raise ValueError(msg)
+
+        if self.max is not None and value > self.max:
+            msg = "maximum value is {}. received {}".format(self.max, value)
+            raise ValueError(msg)
+
+        return value
+
+
+class FloatProperty(Property):
+    def __init__(self, min=None, max=None, **kwargs):
+        self.min = min
+        self.max = max
+        super(FloatProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        try:
+            value = float(value)
+        except Exception:
+            raise ValueError("must be a float.")
+
+        if self.min is not None and value < self.min:
+            msg = "minimum value is {}. received {}".format(self.min, value)
+            raise ValueError(msg)
+
+        if self.max is not None and value > self.max:
+            msg = "maximum value is {}. received {}".format(self.max, value)
+            raise ValueError(msg)
+
+        return value
+
+
+class BooleanProperty(Property):
+    def clean(self, value):
+        if isinstance(value, bool):
+            return value
+
+        trues = ["true", "t", "1"]
+        falses = ["false", "f", "0"]
+        try:
+            if value.lower() in trues:
+                return True
+            if value.lower() in falses:
+                return False
+        except AttributeError:
+            if value == 1:
+                return True
+            if value == 0:
+                return False
+
+        raise ValueError("must be a boolean value.")
+
+class DictionaryProperty(Property):
+    def __init__(self, allow_custom=True, **kwargs):
+        super(DictionaryProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        try:
+            dictified = utils._get_dict(value)
+        except ValueError:
+            raise ValueError("The dictionary property must contain a dictionary")
+        for k in dictified.keys():
+            if not re.match(r"^[a-zA-Z0-9_-]+$", k):
+                msg = (
+                    "contains characters other than lowercase a-z, "
+                    "uppercase A-Z, numerals 0-9, hyphen (-), or "
+                    "underscore (_)"
+                )
+                raise exceptions.DictionaryKeyError(k, msg)
+
+        return dictified
+
 
 class PayloadProperty(Property):
     def clean(self, value):
         try:
+            from .v10.common import Payload
             obj = Payload(**value)
         except Exception as e:
             raise e
@@ -70,6 +329,7 @@ HASHES_REGEX = {
 
 class HashesProperty(DictionaryProperty):
     def clean(self, value):
+
         clean_dict = super(HashesProperty, self).clean(value)
         for k, v in clean_dict.items():
             if k in HASHES_REGEX:
@@ -83,6 +343,8 @@ class HashesProperty(DictionaryProperty):
                     del clean_dict[k]
             else:
                 raise ValueError("'{1}' is not a valid hash".format(v, k))
+        if len(clean_dict) < 1:
+            raise ValueError("must not be empty.")
         return clean_dict
 
 
@@ -98,12 +360,12 @@ class ComponentProperty(Property):
         dictified = {}
         try:
             if isinstance(value, _OpenC2Base):
-                dictified[value._type] = _get_dict(value)
+                dictified[value._type] = utils._get_dict(value)
             else:
-                dictified = _get_dict(value)
+                dictified = utils._get_dict(value)
         except ValueError:
             raise ValueError("This property may only contain a dictionary or object")
-        parsed_obj = parse_component(
+        parsed_obj = utils.parse_component(
             dictified,
             allow_custom=self.allow_custom,
             component_type=self._component_type,
@@ -133,20 +395,11 @@ class ArgsProperty(DictionaryProperty):
     def clean(self, value):
         dictified = {}
         try:
-            dictified = _get_dict(value)
+            dictified = utils._get_dict(value)
         except ValueError:
             raise ValueError("This property may only contain a dictionary or object")
-        parsed_obj = parse_args(dictified, allow_custom=self.allow_custom)
+        parsed_obj = utils.parse_args(dictified, allow_custom=self.allow_custom)
         return parsed_obj
-
-
-class EmptyListProperty(properties.ListProperty):
-    def clean(self, value):
-        # stix2 doesn't allow empty lists
-        if value == None or value == []:
-            return []
-
-        return super(EmptyListProperty, self).clean(value)
 
 
 def CustomProperty(type="x-acme", properties=None):

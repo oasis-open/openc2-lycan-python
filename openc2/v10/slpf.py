@@ -28,23 +28,20 @@
 .. moduleauthor:: Michael Stair <mstair@att.com>
 
 """
-import stix2
-from stix2 import properties
-from ..base import _OpenC2Base, _Actuator, _Target
-from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
+import openc2
 
 import itertools
 from collections import OrderedDict
 
 
-class SLPFActuator(_Actuator):
+class SLPFActuator(openc2.base._Actuator):
     _type = "slpf"
     _properties = OrderedDict(
         [
-            ("hostname", properties.StringProperty()),
-            ("named_group", properties.StringProperty()),
-            ("asset_id", properties.StringProperty()),
-            ("asset_tuple", properties.ListProperty(properties.StringProperty)),
+            ("hostname", openc2.properties.StringProperty()),
+            ("named_group", openc2.properties.StringProperty()),
+            ("asset_id", openc2.properties.StringProperty()),
+            ("asset_tuple", openc2.properties.ListProperty(openc2.properties.StringProperty)),
         ]
     )
 
@@ -53,60 +50,60 @@ class SLPFActuator(_Actuator):
 
         if "asset_tuple" in self:
             if len(self.asset_tuple) > 10:
-                raise stix2.exceptions.InvalidValueError(
+                raise openc2.exceptions.InvalidValueError(
                     self.__class__, "asset_tuple", "Maximum of 10 features allowed"
                 )
 
 
-class SLPFTarget(_Target):
+class SLPFTarget(openc2.base._Target):
     _type = "slpf:rule_number"
     _properties = OrderedDict(
-        [("rule_number", properties.StringProperty(required=True)),]
+        [("rule_number", openc2.properties.StringProperty(required=True)),]
     )
 
 
-class SLPFArgs(_OpenC2Base):
+class SLPFArgs(openc2.base._OpenC2Base):
     _type = "slpf"
     _properties = OrderedDict(
         [
             (
                 "drop_process",
-                properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
+                openc2.properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
             ),
             (
                 "persistent",
-                properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
+                openc2.properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
             ),
             (
                 "direction",
-                properties.EnumProperty(allowed=["both", "ingress", "egress",]),
+                openc2.properties.EnumProperty(allowed=["both", "ingress", "egress",]),
             ),
-            ("insert_rule", properties.IntegerProperty()),
+            ("insert_rule", openc2.properties.IntegerProperty()),
         ]
     )
 
 
-class SLPF(_OpenC2Base):
+class SLPF(openc2.base._OpenC2Base):
     _type = "slpf"
     _properties = OrderedDict(
         [
             (
                 "action",
-                properties.EnumProperty(
+                openc2.properties.EnumProperty(
                     allowed=["query", "deny", "allow", "update", "delete",],
                     required=True,
                 ),
             ),
-            ("target", TargetProperty(required=True)),
-            ("args", ArgsProperty()),
-            ("actuator", ActuatorProperty()),
-            ("command_id", properties.StringProperty()),
+            ("target", openc2.properties.TargetProperty(required=True)),
+            ("args", openc2.properties.ArgsProperty()),
+            ("actuator", openc2.properties.ActuatorProperty()),
+            ("command_id", openc2.properties.StringProperty()),
         ]
     )
 
     def _check_object_constraints(self):
         super(SLPF, self)._check_object_constraints()
-        if not isinstance(self.target, _Target) or not self.target.type in [
+        if not isinstance(self.target, openc2.base._Target) or not self.target.type in [
             "features",
             "file",
             "ipv4_net",

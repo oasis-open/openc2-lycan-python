@@ -29,15 +29,14 @@
 
 """
 
-from stix2 import properties
+import openc2
 from collections import OrderedDict
-from ..base import _OpenC2DataType
 
 
-class Payload(_OpenC2DataType):
+class Payload(openc2.base._OpenC2DataType):
     _type = "payload"
     _properties = OrderedDict(
-        [("bin", properties.BinaryProperty()), ("url", properties.StringProperty())]
+        [("bin", openc2.properties.BinaryProperty()), ("url", openc2.properties.StringProperty())]
     )
 
     def _check_object_constraints(self):
