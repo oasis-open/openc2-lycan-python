@@ -402,7 +402,7 @@ class ArgsProperty(DictionaryProperty):
         return parsed_obj
 
 
-def CustomProperty(type="x-acme", properties=None):
+def CustomProperty(type="x-acme", properties=None, version="1.0"):
     def wrapper(cls):
         _properties = list(
             itertools.chain.from_iterable(
@@ -415,6 +415,6 @@ def CustomProperty(type="x-acme", properties=None):
                 ]
             )
         )
-        return _custom_property_builder(cls, type, _properties, "2.1")
+        return _custom_property_builder(cls, type, _properties, version)
 
     return wrapper
