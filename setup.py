@@ -39,11 +39,12 @@ setup(
     name='openc2',
     version=get_version(),
     description='Produce and consume OpenC2 JSON messages',
+    url='https://github.com/oasis-open/openc2-lycan-python',
     packages=find_packages(exclude=["tests"]),
     license='MIT',
     include_package_data=True,
-    long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
+    long_description=open('README.md').read(),
     install_requires=[
         'six',
         'stix2'
