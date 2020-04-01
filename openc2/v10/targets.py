@@ -100,10 +100,6 @@ class Features(openc2.base._Target):
     def check_object_constraints(self):
         super(Features, self).check_object_constraints()
 
-        if len(self.features) > 10:
-            raise openc2.exceptions.InvalidValueError(
-                self.__class__, "features", "Maximum of 10 features allowed"
-            )
         seen = []
         for feature in self.features:
             if feature in seen:
@@ -231,20 +227,7 @@ class Process(openc2.base._Target):
     def check_object_constraints(self):
         super(Process, self).check_object_constraints()
         self.check_at_least_one_property()
-        if self.get("parent"):
-            dictified = dict(self.get("parent"))
-            try:
-                Process(**dictified)
-            except Exception as e:
-                raise e
-            self._inner["parent"] = dictified
-        if self.get("executable"):
-            dictified = dict(self.get("executable"))
-            try:
-                File(**dictified)
-            except Exception as e:
-                raise e
-            self._inner["executable"] = dictified
+
 
 
 class Properties(openc2.base._Target):

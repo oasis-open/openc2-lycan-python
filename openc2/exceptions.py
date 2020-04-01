@@ -79,6 +79,29 @@ class CustomContentError(OpenC2Error):
     def __init__(self, msg):
         super(CustomContentError, self).__init__(msg)
 
+class ImmutableError(OpenC2Error):
+    """Attempted to modify an object after creation."""
+
+    def __init__(self, cls, key):
+        super(ImmutableError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
+        return msg.format(self)
+
+class DictionaryKeyError(ObjectConfigurationError):
+    """Dictionary key does not conform to the correct format."""
+
+    def __init__(self, key, reason):
+        super(DictionaryKeyError, self).__init__()
+        self.key = key
+        self.reason = reason
+
+    def __str__(self):
+        msg = "Invalid dictionary key {0.key}: ({0.reason})."
+        return msg.format(self)
 
 class OpenC2DeprecationWarning(DeprecationWarning):
     """

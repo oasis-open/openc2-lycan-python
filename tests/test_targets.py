@@ -6,7 +6,18 @@ import json
 def test_ipv4_address_example():
     ip4 = openc2.v10.IPv4Address(ipv4_net="198.51.100.3")
 
+    with pytest.raises(openc2.exceptions.ImmutableError):
+        ip4.type = "bad"
+
+    try:
+        ip4.type = "bad"
+    except Exception as e:
+        assert "Cannot modify" in str(e)
+
     assert ip4.ipv4_net == "198.51.100.3"
+
+    ip4.ipv4_net = "198.51.100.32"
+    assert ip4.ipv4_net == "198.51.100.32"
 
     ser_ipv4 = json.loads(ip4.serialize())
     ip4_2 = openc2.v10.IPv4Address(**ser_ipv4)

@@ -153,10 +153,6 @@ def _custom_property_builder(cls, type, properties, version):
             if kwargs:
                 self.clean(self)
 
-        def __setattr__(self, name, value):
-            # _OpenC2Base is immutable so we have to override that functionality
-            cls.__setattr__(self, name, value)
-
         def __call__(self, _value=None, **kwargs):
             """__init__ for when using an instance
             Example: Used by ListProperty to handle lists that have been defined with

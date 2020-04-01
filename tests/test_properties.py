@@ -89,6 +89,82 @@ def test_args_custom_embed_property():
     assert bar.value[1].value[0] != None
     assert bar.value[1].value[0].value == "my_value2"
 
+def test_binary_property():
+    foo = openc2.properties.BinaryProperty()
+    assert foo.clean("RXZlcldhdGNo") == "RXZlcldhdGNo"
+
+    with pytest.raises(ValueError):
+        foo.clean("bad")
+
+def test_integer_property():
+    foo = openc2.properties.IntegerProperty()
+    assert foo.clean(1) == 1
+
+    invalid = ["a"]
+    for i in invalid:
+        with pytest.raises(ValueError):
+            foo.clean(i)
+
+    foo = openc2.properties.IntegerProperty(min=1)
+    with pytest.raises(ValueError):
+        foo.clean(0)
+
+    foo = openc2.properties.IntegerProperty(max=10)
+    with pytest.raises(ValueError):
+        foo.clean(11)
+
+def test_float_property():
+    foo = openc2.properties.FloatProperty()
+    assert foo.clean(1.0) == 1.0
+    assert foo.clean(1) == 1.0
+    with pytest.raises(ValueError):
+        foo.clean("a")
+
+    foo = openc2.properties.FloatProperty(min=1.0)
+    with pytest.raises(ValueError):
+        foo.clean(0.0)
+
+    foo.clean(1.0)
+
+    foo = openc2.properties.FloatProperty(max=10.0)
+    with pytest.raises(ValueError):
+        foo.clean(11.0)
+
+def test_dictionary_property():
+    foo = openc2.properties.DictionaryProperty()
+    assert foo.clean({"key": "value"}) == {"key": "value"}
+
+    with pytest.raises(ValueError):
+        foo.clean("bad")
+
+    foo = openc2.properties.DictionaryProperty(allowed_keys=["key"])
+    assert foo.clean({"key": "value"}) == {"key": "value"}
+
+    with pytest.raises(openc2.exceptions.DictionaryKeyError):
+        foo.clean({"bad": "value"})
+
+    foo = openc2.properties.DictionaryProperty(allowed_key_regex=r"^[a-zA-Z0-9_-]+$")
+    with pytest.raises(openc2.exceptions.DictionaryKeyError):
+        foo.clean({"😈": "bad"})
+
+def test_file_property():
+    foo = openc2.properties.FileProperty()
+    assert foo.clean({"name": "file.txt"}) == openc2.v10.targets.File(name="file.txt")
+
+    foo = openc2.properties.FileProperty(version="0.0")
+    assert foo.clean("bad") == "bad"
+
+def test_component_property():
+    foo = openc2.properties.ComponentProperty()
+    with pytest.raises(ValueError):
+        foo.clean({"key": "value"})
+
+    foo = openc2.properties.ComponentProperty(component_type="bad_type")
+    with pytest.raises(openc2.exceptions.CustomContentError):
+        foo.clean({"key": "value"})
+
+    with pytest.raises(ValueError):
+        foo.clean("bad")
 
 def test_custom_property_fixed():
     @openc2.properties.CustomProperty(

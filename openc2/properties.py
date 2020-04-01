@@ -29,6 +29,7 @@
 
 """
 import base64
+import binascii
 from .base import _OpenC2Base
 from collections import OrderedDict
 from .custom import _custom_property_builder
@@ -216,11 +217,6 @@ class BinaryProperty(Property):
         return value
 
 
-class TypeProperty(Property):
-    def __init__(self, type):
-        super(TypeProperty, self).__init__(fixed=type)
-
-
 class IntegerProperty(Property):
     def __init__(self, min=None, max=None, **kwargs):
         self.min = min
@@ -267,29 +263,10 @@ class FloatProperty(Property):
         return value
 
 
-class BooleanProperty(Property):
-    def clean(self, value):
-        if isinstance(value, bool):
-            return value
-
-        trues = ["true", "t", "1"]
-        falses = ["false", "f", "0"]
-        try:
-            if value.lower() in trues:
-                return True
-            if value.lower() in falses:
-                return False
-        except AttributeError:
-            if value == 1:
-                return True
-            if value == 0:
-                return False
-
-        raise ValueError("must be a boolean value.")
-
-
 class DictionaryProperty(Property):
-    def __init__(self, allow_custom=True, **kwargs):
+    def __init__(self, allowed_keys=None, allowed_key_regex=None, **kwargs):
+        self.allowed_keys = allowed_keys
+        self.allowed_key_regex = allowed_key_regex
         super(DictionaryProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -298,7 +275,9 @@ class DictionaryProperty(Property):
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
         for k in dictified.keys():
-            if not re.match(r"^[a-zA-Z0-9_-]+$", k):
+            if self.allowed_keys and k not in self.allowed_keys:
+                raise exceptions.DictionaryKeyError(k, "Key not allowed")
+            if self.allowed_key_regex and not re.match(self.allowed_key_regex, k):
                 msg = (
                     "contains characters other than lowercase a-z, "
                     "uppercase A-Z, numerals 0-9, hyphen (-), or "
@@ -311,21 +290,38 @@ class DictionaryProperty(Property):
 
 class PayloadProperty(Property):
     def clean(self, value):
-        try:
-            from .v10.common import Payload
+        from .v10.common import Payload
 
-            obj = Payload(**value)
-        except Exception as e:
-            raise e
+        obj = Payload(**value)
+
         return obj
 
 
 class ProcessProperty(Property):
-    pass
+    def clean(self, value):
+        from .v10.targets import Process
+        if value.get('process'):
+            process = Process(**value.get('process'))
+        else:
+            process = Process(**value)
+        return process
+
 
 
 class FileProperty(Property):
-    pass
+    def __init__(self, required=False, fixed=None, default=None, version="1.0"):
+        super(FileProperty, self).__init__(required=required, fixed=fixed, default=default)
+        self._version = version
+
+    def clean(self, value):
+        if self._version == "1.0":
+            from .v10.targets import File
+            if value.get('file'):
+                file = File(**value.get('file'))
+            else:
+                file = File(**value)
+            return file
+        return value
 
 
 # openc2 1.0 spec only supports md5, sha1, sha256

@@ -234,8 +234,8 @@ class _OpenC2Base(Mapping):
         )
 
     def __setattr__(self, name, value):
-        if not name.startswith("_"):
-            raise ImmutableError(self.__class__, name)
+        if name == "type":
+            raise exceptions.ImmutableError(self.__class__, name)
         super(_OpenC2Base, self).__setattr__(name, value)
 
     def __getitem__(self, key):
