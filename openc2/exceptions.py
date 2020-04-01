@@ -66,99 +66,45 @@ class ExtraPropertiesError(PropertyPresenceError):
         super(ExtraPropertiesError, self).__init__(msg, cls)
 
 
-class MutuallyExclusivePropertiesError(PropertyPresenceError):
-    """Violating interproperty mutually exclusive constraint of a OpenC2 object type."""
+# class MutuallyExclusivePropertiesError(PropertyPresenceError):
+#     """Violating interproperty mutually exclusive constraint of a OpenC2 object type."""
 
-    def __init__(self, cls, properties):
-        self.properties = sorted(properties)
+#     def __init__(self, cls, properties):
+#         self.properties = sorted(properties)
 
-        msg = "The ({1}) properties for {0} are mutually exclusive.".format(
-            cls.__name__, ", ".join(x for x in self.properties),
-        )
+#         msg = "The ({1}) properties for {0} are mutually exclusive.".format(
+#             cls.__name__, ", ".join(x for x in self.properties),
+#         )
 
-        super(MutuallyExclusivePropertiesError, self).__init__(msg, cls)
-
-
-class DependentPropertiesError(PropertyPresenceError):
-    """Violating interproperty dependency constraint of a OpenC2 object type."""
-
-    def __init__(self, cls, dependencies):
-        self.dependencies = dependencies
-
-        msg = "The property dependencies for {0}: ({1}) are not met.".format(
-            cls.__name__, ", ".join(name for x in self.dependencies for name in x),
-        )
-
-        super(DependentPropertiesError, self).__init__(msg, cls)
+#         super(MutuallyExclusivePropertiesError, self).__init__(msg, cls)
 
 
-class AtLeastOnePropertyError(PropertyPresenceError):
-    """Violating a constraint of a OpenC2 object type that at least one of the given properties must be populated."""
+# class DependentPropertiesError(PropertyPresenceError):
+#     """Violating interproperty dependency constraint of a OpenC2 object type."""
 
-    def __init__(self, cls, properties):
-        self.properties = sorted(properties)
+#     def __init__(self, cls, dependencies):
+#         self.dependencies = dependencies
 
-        msg = (
-            "At least one of the ({1}) properties for {0} must be "
-            "populated.".format(cls.__name__, ", ".join(x for x in self.properties),)
-        )
+#         msg = "The property dependencies for {0}: ({1}) are not met.".format(
+#             cls.__name__, ", ".join(name for x in self.dependencies for name in x),
+#         )
 
-        super(AtLeastOnePropertyError, self).__init__(msg, cls)
-
-
-class DictionaryKeyError(ObjectConfigurationError):
-    """Dictionary key does not conform to the correct format."""
-
-    def __init__(self, key, reason):
-        super(DictionaryKeyError, self).__init__()
-        self.key = key
-        self.reason = reason
-
-    def __str__(self):
-        msg = "Invalid dictionary key {0.key}: ({0.reason})."
-        return msg.format(self)
+#         super(DependentPropertiesError, self).__init__(msg, cls)
 
 
-class InvalidObjRefError(ObjectConfigurationError):
-    """A OpenC2 Cyber Observable Object contains an invalid object reference."""
+# class AtLeastOnePropertyError(PropertyPresenceError):
+#     """Violating a constraint of a OpenC2 object type that at least one of the given properties must be populated."""
 
-    def __init__(self, cls, prop_name, reason):
-        super(InvalidObjRefError, self).__init__()
-        self.cls = cls
-        self.prop_name = prop_name
-        self.reason = reason
+#     def __init__(self, cls, properties):
+#         self.properties = sorted(properties)
 
-    def __str__(self):
-        msg = (
-            "Invalid object reference for '{0.cls.__name__}:{0.prop_name}': {0.reason}"
-        )
-        return msg.format(self)
+#         msg = (
+#             "At least one of the ({1}) properties for {0} must be "
+#             "populated.".format(cls.__name__, ", ".join(x for x in self.properties),)
+#         )
 
+#         super(AtLeastOnePropertyError, self).__init__(msg, cls)
 
-class InvalidSelectorError(ObjectConfigurationError):
-    """Granular Marking selector violation. The selector must resolve into an existing OpenC2 object property."""
-
-    def __init__(self, cls, key):
-        super(InvalidSelectorError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Selector {0} in {1} is not valid!"
-        return msg.format(self.key, self.cls.__class__.__name__)
-
-
-class TLPMarkingDefinitionError(ObjectConfigurationError):
-    """Marking violation. The marking-definition for TLP MUST follow the mandated instances from the spec."""
-
-    def __init__(self, user_obj, spec_obj):
-        super(TLPMarkingDefinitionError, self).__init__()
-        self.user_obj = user_obj
-        self.spec_obj = spec_obj
-
-    def __str__(self):
-        msg = "Marking {0} does not match spec marking {1}!"
-        return msg.format(self.user_obj, self.spec_obj)
 
 
 class ImmutableError(OpenC2Error):
@@ -186,20 +132,6 @@ class UnmodifiablePropertyError(OpenC2Error):
         return msg.format(", ".join(self.unchangable_properties))
 
 
-class RevokeError(OpenC2Error):
-    """Attempted an operation on a revoked object."""
-
-    def __init__(self, called_by):
-        super(RevokeError, self).__init__()
-        self.called_by = called_by
-
-    def __str__(self):
-        if self.called_by == "revoke":
-            return "Cannot revoke an already revoked object."
-        else:
-            return "Cannot create a new version of a revoked object."
-
-
 class ParseError(OpenC2Error):
     """Could not parse object."""
 
@@ -212,19 +144,6 @@ class CustomContentError(OpenC2Error):
 
     def __init__(self, msg):
         super(CustomContentError, self).__init__(msg)
-
-
-class MarkingNotFoundError(OpenC2Error):
-    """Marking violation. The marking reference must be present in SDO or SRO."""
-
-    def __init__(self, cls, key):
-        super(MarkingNotFoundError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Marking {0} was not found in {1}!"
-        return msg.format(self.key, self.cls.__class__.__name__)
 
 
 class OpenC2DeprecationWarning(DeprecationWarning):

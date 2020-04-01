@@ -78,6 +78,12 @@ def test_args_duration():
         with pytest.raises(openc2.exceptions.InvalidValueError):
             openc2.v10.Args(duration=item)
 
+    try:
+        openc2.v10.Args(duration=invalid[0])
+    except Exception as e:
+        assert "Invalid value" in str(e) 
+
+
     # xxx: floats etc is currently valid and passing
 
 

@@ -28,7 +28,6 @@
 .. moduleauthor:: Michael Stair <mstair@att.com>
 
 """
-import six
 import base64
 from .base import _OpenC2Base
 from collections import OrderedDict
@@ -142,7 +141,7 @@ class ListProperty(Property):
         except TypeError:
             raise ValueError("must be an iterable.")
 
-        if isinstance(value, (_OpenC2Base, six.string_types)):
+        if isinstance(value, (_OpenC2Base, str)):
             value = [value]
 
         result = []
@@ -181,8 +180,8 @@ class StringProperty(Property):
         super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        if not isinstance(value, six.string_types):
-            return six.text_type(value)
+        if not isinstance(value, str):
+            return str(value)
         return value
 
 class EnumProperty(StringProperty):

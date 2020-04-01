@@ -29,15 +29,11 @@
 
 """
 
-import six
 import copy
 import json
 from . import exceptions
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
+from collections.abc import Mapping
 
 
 class OpenC2JSONEncoder(json.JSONEncoder):
@@ -64,6 +60,7 @@ class OpenC2JSONEncoder(json.JSONEncoder):
                 return stix2.base.STIXJSONEncoder.default(self, obj)
             except:
                 pass
+
             if isinstance(obj, (dt.date, dt.datetime)):
                 return format_datetime(obj)
             return super(OpenC2JSONEncoder, self).default(obj)
@@ -98,12 +95,7 @@ class _OpenC2Base(Mapping):
                 # InvalidValueError... so let those propagate.
                 raise
             except Exception as exc:
-                six.raise_from(
-                    exceptions.InvalidValueError(
-                        self.__class__, prop_name, reason=str(exc),
-                    ),
-                    exc,
-                )
+                raise exceptions.InvalidValueError(self.__class__, prop_name, str(exc)) from exc
 
     # interproperty constraint methods
 
@@ -273,8 +265,7 @@ class _OpenC2Base(Mapping):
             )
 
         unchangable_properties = []
-        if self.get("revoked"):
-            raise exceptions.RevokeError("new_version")
+        
         try:
             new_obj_inner = copy.deepcopy(self._inner)
         except AttributeError:
