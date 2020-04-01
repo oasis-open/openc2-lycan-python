@@ -143,16 +143,15 @@ def _custom_property_builder(cls, type, properties, version):
         def __init__(
             self, required=False, fixed=None, default=None, allow_custom=False, **kwargs
         ):
-            self.required = required
-            if fixed:
-                self._fixed_value = fixed
-                self.clean = self._default_clean
-                self.default = lambda: fixed
-            if default:
-                self.default = default
 
             _OpenC2Base.__init__(self, allow_custom=allow_custom, **kwargs)
             _cls_init(cls, self, kwargs)
+            openc2_properties.Property.__init__(
+                self, required=required, fixed=fixed, default=default
+            )
+
+            if kwargs:
+                self.clean(self)
 
         def __setattr__(self, name, value):
             # _OpenC2Base is immutable so we have to override that functionality
@@ -165,7 +164,9 @@ def _custom_property_builder(cls, type, properties, version):
             """
             if _value:
                 return _value
-            return self.__class__(**kwargs)
+
+            value = self.__class__(**kwargs)
+            return self.clean(value)
 
     _register_extension(_CustomProperty, object_type="properties", version=version)
     return _CustomProperty

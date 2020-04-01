@@ -54,7 +54,9 @@ def test_cmd_custom_actuator():
                 raise ValueError("'%f' is not a supported version." % version)
 
     widget = AcmeWidgetActuator(name="foo", version=1.1)
-    foo = openc2.v10.Command(action="query", target=openc2.v10.Features(), actuator=widget)
+    foo = openc2.v10.Command(
+        action="query", target=openc2.v10.Features(), actuator=widget
+    )
     assert foo
     assert foo.action == "query"
     assert foo.actuator.name == "foo"
@@ -69,7 +71,9 @@ def test_cmd_custom_actuator():
 
 def test_cmd_slpf_actuator():
     widget = openc2.v10.SLPFActuator(hostname="localhost")
-    foo = openc2.v10.Command(action="query", target=openc2.v10.Features(), actuator=widget)
+    foo = openc2.v10.Command(
+        action="query", target=openc2.v10.Features(), actuator=widget
+    )
     assert foo
     assert foo.action == "query"
     assert foo.actuator.hostname == "localhost"
@@ -100,7 +104,9 @@ def test_cmd_custom():
     class CustomTarget(object):
         pass
 
-    @openc2.v10.CustomArgs("whatever-who-cares", [("custom_args", CustomTargetProperty())])
+    @openc2.v10.CustomArgs(
+        "whatever-who-cares", [("custom_args", CustomTargetProperty())]
+    )
     class CustomArgs(object):
         pass
 

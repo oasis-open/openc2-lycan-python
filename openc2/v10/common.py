@@ -36,9 +36,12 @@ from collections import OrderedDict
 class Payload(openc2.base._OpenC2DataType):
     _type = "payload"
     _properties = OrderedDict(
-        [("bin", openc2.properties.BinaryProperty()), ("url", openc2.properties.StringProperty())]
+        [
+            ("bin", openc2.properties.BinaryProperty()),
+            ("url", openc2.properties.StringProperty()),
+        ]
     )
 
-    def _check_object_constraints(self):
-        super(Payload, self)._check_object_constraints()
-        self._check_mutually_exclusive_properties(["bin", "url"])
+    def check_object_constraints(self):
+        super(Payload, self).check_object_constraints()
+        self.check_mutually_exclusive_properties(["bin", "url"])

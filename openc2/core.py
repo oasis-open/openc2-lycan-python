@@ -39,6 +39,7 @@ OPENC2_OBJ_MAPS = {}
 
 from . import utils
 
+
 def _register_extension(new_type, object_type, version=None):
     EXT_MAP = OPENC2_OBJ_MAPS["extensions"]
     EXT_MAP[object_type][new_type._type] = new_type

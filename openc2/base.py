@@ -57,7 +57,12 @@ class OpenC2JSONEncoder(json.JSONEncoder):
                 # support stix2 objects, but stix2 isn't a dependency
                 import stix2
 
-                return stix2.base.STIXJSONEncoder.default(self, obj)
+                try:
+                    return stix2.base.STIXJSONEncoder.default(self, obj)
+                except:
+                    return stix2.base.STIXJSONIncludeOptionalDefaultsEncoder.default(
+                        self, obj
+                    )
             except:
                 pass
 
@@ -83,7 +88,7 @@ class _OpenC2Base(Mapping):
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
-            if hasattr(prop, "default"): # shouldn't this be fixed, as default can be overriden?
+            if hasattr(prop, "default"):
                 value = prop.default()
                 kwargs[prop_name] = value
 
@@ -95,11 +100,13 @@ class _OpenC2Base(Mapping):
                 # InvalidValueError... so let those propagate.
                 raise
             except Exception as exc:
-                raise exceptions.InvalidValueError(self.__class__, prop_name, str(exc)) from exc
+                raise exceptions.InvalidValueError(
+                    self.__class__, prop_name, str(exc)
+                ) from exc
 
     # interproperty constraint methods
 
-    def _check_mutually_exclusive_properties(
+    def check_mutually_exclusive_properties(
         self, list_of_properties, at_least_one=True
     ):
         current_properties = self.properties_populated()
@@ -110,7 +117,7 @@ class _OpenC2Base(Mapping):
                 self.__class__, list_of_properties
             )
 
-    def _check_at_least_one_property(self, list_of_properties=None):
+    def check_at_least_one_property(self, list_of_properties=None):
         if not list_of_properties:
             list_of_properties = sorted(list(self.__class__._properties.keys()))
 
@@ -125,7 +132,7 @@ class _OpenC2Base(Mapping):
         ):
             raise exceptions.AtLeastOnePropertyError(self.__class__, list_of_properties)
 
-    def _check_properties_dependency(
+    def check_properties_dependency(
         self, list_of_properties, list_of_dependent_properties
     ):
         failed_dependency_pairs = []
@@ -138,7 +145,10 @@ class _OpenC2Base(Mapping):
                 self.__class__, failed_dependency_pairs
             )
 
-    def _check_object_constraints(self):
+    def check_object_constraints(self):
+        """
+        Meant to be overriden by subclasses. This is called after instance creation
+        """
         pass
 
     def __init__(self, allow_custom=False, **kwargs):
@@ -189,7 +199,7 @@ class _OpenC2Base(Mapping):
 
         self._inner = setting_kwargs
 
-        self._check_object_constraints()
+        self.check_object_constraints()
 
     def serialize(self, pretty=False, **kwargs):
         if pretty:
@@ -265,7 +275,7 @@ class _OpenC2Base(Mapping):
             )
 
         unchangable_properties = []
-        
+
         try:
             new_obj_inner = copy.deepcopy(self._inner)
         except AttributeError:

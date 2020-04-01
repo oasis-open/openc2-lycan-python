@@ -3,6 +3,7 @@ import copy
 from . import exceptions
 from .core import OPENC2_OBJ_MAPS
 
+
 def _get_data_info(data, component_type, allow_custom=False):
     obj = _get_dict(data)
     obj = copy.deepcopy(obj)
@@ -44,6 +45,7 @@ def _get_data_info(data, component_type, allow_custom=False):
         obj = obj[_type]
 
     return (obj, obj_class, _type, nsid)
+
 
 def _get_dict(data):
     """Return data as a dictionary.
@@ -100,6 +102,7 @@ def dict_to_openc2(openc2_dict, allow_custom=False, version=None):
         )
 
     return obj_class(allow_custom=allow_custom, **openc2_dict)
+
 
 def parse_component(data, allow_custom=False, version=None, component_type=None):
     (obj, obj_class, _type, nsid) = _get_data_info(

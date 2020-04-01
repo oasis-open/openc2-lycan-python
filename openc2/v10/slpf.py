@@ -41,12 +41,15 @@ class SLPFActuator(openc2.base._Actuator):
             ("hostname", openc2.properties.StringProperty()),
             ("named_group", openc2.properties.StringProperty()),
             ("asset_id", openc2.properties.StringProperty()),
-            ("asset_tuple", openc2.properties.ListProperty(openc2.properties.StringProperty)),
+            (
+                "asset_tuple",
+                openc2.properties.ListProperty(openc2.properties.StringProperty),
+            ),
         ]
     )
 
-    def _check_object_constraints(self):
-        super(SLPFActuator, self)._check_object_constraints()
+    def check_object_constraints(self):
+        super(SLPFActuator, self).check_object_constraints()
 
         if "asset_tuple" in self:
             if len(self.asset_tuple) > 10:
@@ -68,11 +71,15 @@ class SLPFArgs(openc2.base._OpenC2Base):
         [
             (
                 "drop_process",
-                openc2.properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
+                openc2.properties.EnumProperty(
+                    allowed=["none", "reject", "false_ack",]
+                ),
             ),
             (
                 "persistent",
-                openc2.properties.EnumProperty(allowed=["none", "reject", "false_ack",]),
+                openc2.properties.EnumProperty(
+                    allowed=["none", "reject", "false_ack",]
+                ),
             ),
             (
                 "direction",
@@ -101,8 +108,8 @@ class SLPF(openc2.base._OpenC2Base):
         ]
     )
 
-    def _check_object_constraints(self):
-        super(SLPF, self)._check_object_constraints()
+    def check_object_constraints(self):
+        super(SLPF, self).check_object_constraints()
         if not isinstance(self.target, openc2.base._Target) or not self.target.type in [
             "features",
             "file",

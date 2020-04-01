@@ -108,18 +108,23 @@ class Property(object):
         """
         return value
 
-class EmbeddedObjectProperty(Property):
 
+class EmbeddedObjectProperty(Property):
     def __init__(self, type, **kwargs):
         self.type = type
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        if type(value) is dict:
+        if isinstance(self.type, _OpenC2Base) and isinstance(
+            self.type, Property
+        ):  # is a Custom Property
+            return self.type.clean(value)
+        elif type(value) is dict:
             value = self.type(**value)
         elif not isinstance(value, self.type):
             raise ValueError("must be of type {}.".format(self.type.__name__))
         return value
+
 
 class ListProperty(Property):
     def __init__(self, contained, **kwargs):
@@ -141,7 +146,7 @@ class ListProperty(Property):
         except TypeError:
             raise ValueError("must be an iterable.")
 
-        if isinstance(value, (_OpenC2Base, str)):
+        if isinstance(value, (_OpenC2Base, (str,))):
             value = [value]
 
         result = []
@@ -184,8 +189,8 @@ class StringProperty(Property):
             return str(value)
         return value
 
-class EnumProperty(StringProperty):
 
+class EnumProperty(StringProperty):
     def __init__(self, allowed, **kwargs):
         if type(allowed) is not list:
             allowed = list(allowed)
@@ -195,18 +200,21 @@ class EnumProperty(StringProperty):
     def clean(self, value):
         cleaned_value = super(EnumProperty, self).clean(value)
         if cleaned_value not in self.allowed:
-            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+            raise ValueError(
+                "value '{}' is not valid for this enumeration.".format(cleaned_value)
+            )
 
         return cleaned_value
 
-class BinaryProperty(Property):
 
+class BinaryProperty(Property):
     def clean(self, value):
         try:
             base64.b64decode(value)
         except (binascii.Error, TypeError):
             raise ValueError("must contain a base64 encoded string")
         return value
+
 
 class TypeProperty(Property):
     def __init__(self, type):
@@ -279,6 +287,7 @@ class BooleanProperty(Property):
 
         raise ValueError("must be a boolean value.")
 
+
 class DictionaryProperty(Property):
     def __init__(self, allow_custom=True, **kwargs):
         super(DictionaryProperty, self).__init__(**kwargs)
@@ -304,6 +313,7 @@ class PayloadProperty(Property):
     def clean(self, value):
         try:
             from .v10.common import Payload
+
             obj = Payload(**value)
         except Exception as e:
             raise e

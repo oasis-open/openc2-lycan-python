@@ -47,9 +47,9 @@ class Artifact(openc2.base._Target):
         ]
     )
 
-    def _check_object_constraints(self):
-        super(Artifact, self)._check_object_constraints()
-        self._check_at_least_one_property()
+    def check_object_constraints(self):
+        super(Artifact, self).check_object_constraints()
+        self.check_at_least_one_property()
 
 
 class Device(openc2.base._Target):
@@ -57,8 +57,8 @@ class Device(openc2.base._Target):
     _properties = OrderedDict(
         [
             ("hostname", openc2.properties.StringProperty()),
-            ("idn_hostname",openc2.properties.StringProperty()),
-            ("device_id",openc2.properties.StringProperty()),
+            ("idn_hostname", openc2.properties.StringProperty()),
+            ("device_id", openc2.properties.StringProperty()),
         ]
     )
 
@@ -94,11 +94,11 @@ class Features(openc2.base._Target):
     )
 
     def __init__(self, features=None, *args, **kwargs):
-        # _check_object_constraints wasn't called unless features was declared here
+        # check_object_constraints wasn't called unless features was declared here
         super(Features, self).__init__(features=features, *args, **kwargs)
 
-    def _check_object_constraints(self):
-        super(Features, self)._check_object_constraints()
+    def check_object_constraints(self):
+        super(Features, self).check_object_constraints()
 
         if len(self.features) > 10:
             raise openc2.exceptions.InvalidValueError(
@@ -125,9 +125,9 @@ class File(openc2.base._Target):
         ]
     )
 
-    def _check_object_constraints(self):
-        super(File, self)._check_object_constraints()
-        self._check_at_least_one_property()
+    def check_object_constraints(self):
+        super(File, self).check_object_constraints()
+        self.check_at_least_one_property()
 
 
 class InternationalizedDomainName(openc2.base._Target):
@@ -146,12 +146,16 @@ class InternationalizedEmailAddress(openc2.base._Target):
 
 class IPv4Address(openc2.base._Target):
     _type = "ipv4_net"
-    _properties = OrderedDict([("ipv4_net", openc2.properties.StringProperty(required=True)),])
+    _properties = OrderedDict(
+        [("ipv4_net", openc2.properties.StringProperty(required=True)),]
+    )
 
 
 class IPv6Address(openc2.base._Target):
     _type = "ipv6_net"
-    _properties = OrderedDict([("ipv6_net", openc2.properties.StringProperty(required=True)),])
+    _properties = OrderedDict(
+        [("ipv6_net", openc2.properties.StringProperty(required=True)),]
+    )
 
 
 class IPv4Connection(openc2.base._Target):
@@ -160,69 +164,73 @@ class IPv4Connection(openc2.base._Target):
         [
             ("src_addr", openc2.properties.StringProperty()),
             ("src_port", openc2.properties.IntegerProperty(min=0, max=65535)),
-            ("dst_addr",openc2.properties.StringProperty()),
-            ("dst_port",openc2.properties.IntegerProperty(min=0, max=65535)),
+            ("dst_addr", openc2.properties.StringProperty()),
+            ("dst_port", openc2.properties.IntegerProperty(min=0, max=65535)),
             (
                 "protocol",
-               openc2.properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
+                openc2.properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
             ),
         ]
     )
 
-    def _check_object_constraints(self):
-        super(IPv4Connection, self)._check_object_constraints()
-        self._check_at_least_one_property()
+    def check_object_constraints(self):
+        super(IPv4Connection, self).check_object_constraints()
+        self.check_at_least_one_property()
 
 
 class IPv6Connection(openc2.base._Target):
     _type = "ipv6_connection"
     _properties = OrderedDict(
         [
-            ("src_addr",openc2.properties.StringProperty()),
-            ("src_port",openc2.properties.IntegerProperty(min=0, max=65535)),
-            ("dst_addr",openc2.properties.StringProperty()),
-            ("dst_port",openc2.properties.IntegerProperty(min=0, max=65535)),
+            ("src_addr", openc2.properties.StringProperty()),
+            ("src_port", openc2.properties.IntegerProperty(min=0, max=65535)),
+            ("dst_addr", openc2.properties.StringProperty()),
+            ("dst_port", openc2.properties.IntegerProperty(min=0, max=65535)),
             (
                 "protocol",
-               openc2.properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
+                openc2.properties.EnumProperty(allowed=["icmp", "tcp", "udp", "sctp"]),
             ),
         ]
     )
 
-    def _check_object_constraints(self):
-        super(IPv6Connection, self)._check_object_constraints()
-        self._check_at_least_one_property()
+    def check_object_constraints(self):
+        super(IPv6Connection, self).check_object_constraints()
+        self.check_at_least_one_property()
 
 
 class IRI(openc2.base._Target):
     _type = "iri"
-    _properties = OrderedDict([("iri",openc2.properties.StringProperty(required=True)),])
+    _properties = OrderedDict(
+        [("iri", openc2.properties.StringProperty(required=True)),]
+    )
 
 
 class MACAddress(openc2.base._Target):
     _type = "mac_addr"
-    _properties = OrderedDict([("mac_addr",openc2.properties.StringProperty(required=True)),])
+    _properties = OrderedDict(
+        [("mac_addr", openc2.properties.StringProperty(required=True)),]
+    )
 
 
 class Process(openc2.base._Target):
     _type = "process"
     _properties = OrderedDict(
         [
-            ("pid",openc2.properties.IntegerProperty()),
-            ("name",openc2.properties.StringProperty()),
-            ("cwd",openc2.properties.StringProperty()),
+            ("pid", openc2.properties.IntegerProperty()),
+            ("name", openc2.properties.StringProperty()),
+            ("cwd", openc2.properties.StringProperty()),
             ("executable", openc2.properties.FileProperty()),
             ("parent", openc2.properties.ProcessProperty()),
-            ("command_line",openc2.properties.StringProperty()),
+            ("command_line", openc2.properties.StringProperty()),
         ]
     )
 
     def __init__(self, allow_custom=False, **kwargs):
         super(Process, self).__init__(allow_custom, **kwargs)
 
-    def _check_object_constraints(self):
-        super(Process, self)._check_object_constraints()
-        self._check_at_least_one_property()
+    def check_object_constraints(self):
+        super(Process, self).check_object_constraints()
+        self.check_at_least_one_property()
         if self.get("parent"):
             dictified = dict(self.get("parent"))
             try:
@@ -242,13 +250,20 @@ class Process(openc2.base._Target):
 class Properties(openc2.base._Target):
     _type = "properties"
     _properties = OrderedDict(
-        [("properties",openc2.properties.ListProperty(openc2.properties.StringProperty)),]
+        [
+            (
+                "properties",
+                openc2.properties.ListProperty(openc2.properties.StringProperty),
+            ),
+        ]
     )
 
 
 class URI(openc2.base._Target):
     _type = "uri"
-    _properties = OrderedDict([("uri",openc2.properties.StringProperty(required=True)),])
+    _properties = OrderedDict(
+        [("uri", openc2.properties.StringProperty(required=True)),]
+    )
 
 
 def CustomTarget(type="x-acme", properties=None):

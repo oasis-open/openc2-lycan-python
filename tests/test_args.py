@@ -81,8 +81,7 @@ def test_args_duration():
     try:
         openc2.v10.Args(duration=invalid[0])
     except Exception as e:
-        assert "Invalid value" in str(e) 
-
+        assert "Invalid value" in str(e)
 
     # xxx: floats etc is currently valid and passing
 
@@ -113,13 +112,17 @@ def test_args_allow_custom():
 def test_args_custom():
     with pytest.raises(openc2.exceptions.PropertyPresenceError):
 
-        @openc2.v10.CustomArgs("custom-args", [("type", openc2.properties.StringProperty())])
+        @openc2.v10.CustomArgs(
+            "custom-args", [("type", openc2.properties.StringProperty())]
+        )
         class MyCustomArgs(object):
             pass
 
     with pytest.raises(TypeError):
 
-        @openc2.v10.CustomArgs("custom-args", ("type", openc2.properties.StringProperty()))
+        @openc2.v10.CustomArgs(
+            "custom-args", ("type", openc2.properties.StringProperty())
+        )
         class MyCustomArgs(object):
             pass
 

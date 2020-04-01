@@ -3,6 +3,7 @@ import stix2
 import pytest
 import json
 
+
 def test_custom_target():
     @openc2.v10.CustomTarget("x-thing:id", [("id", stix2.properties.StringProperty())])
     class CustomTarget(object):
@@ -26,7 +27,9 @@ def test_custom_target():
 
     with pytest.raises(ValueError):
 
-        @openc2.v10.CustomTarget("x-invalid", [("id", stix2.properties.StringProperty())])
+        @openc2.v10.CustomTarget(
+            "x-invalid", [("id", stix2.properties.StringProperty())]
+        )
         class CustomTargetInvalid(object):
             pass
 

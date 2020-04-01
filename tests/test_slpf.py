@@ -36,7 +36,9 @@ def test_slpf_actuator():
 
     # max 10 items
     with pytest.raises(openc2.exceptions.InvalidValueError):
-        openc2.v10.SLPFActuator(asset_tuple=list(map(lambda x: str(x), list(range(11)))))
+        openc2.v10.SLPFActuator(
+            asset_tuple=list(map(lambda x: str(x), list(range(11))))
+        )
 
 
 def test_slpf_cmd():
@@ -74,5 +76,7 @@ def test_slpf_cmd():
 
     with pytest.raises(ValueError):
         openc2.v10.slpf.SLPF(
-            action="query", target=openc2.v10.Features(), actuator=MyCustomActuator(id="id")
+            action="query",
+            target=openc2.v10.Features(),
+            actuator=MyCustomActuator(id="id"),
         )

@@ -44,13 +44,15 @@ class Args(openc2.base._OpenC2Base):
             ("duration", openc2.properties.IntegerProperty(min=0)),
             (
                 "response_requested",
-                openc2.properties.EnumProperty(allowed=["none", "ack", "status", "complete"]),
+                openc2.properties.EnumProperty(
+                    allowed=["none", "ack", "status", "complete"]
+                ),
             ),
         ]
     )
 
-    def _check_object_constraints(self):
-        super(Args, self)._check_object_constraints()
+    def check_object_constraints(self):
+        super(Args, self).check_object_constraints()
         if "stop_time" in self and "start_time" in self and "duration" in self:
             raise openc2.exceptions.PropertyPresenceError(
                 "start_time, stop_time, duration: Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.",

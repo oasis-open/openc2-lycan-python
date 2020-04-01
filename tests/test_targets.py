@@ -48,7 +48,9 @@ def test_custom_target():
 
     with pytest.raises(ValueError):
 
-        @openc2.v10.CustomTarget("x-invalid", [("id", openc2.properties.StringProperty())])
+        @openc2.v10.CustomTarget(
+            "x-invalid", [("id", openc2.properties.StringProperty())]
+        )
         class CustomTargetInvalid(object):
             pass
 
@@ -111,12 +113,44 @@ def test_custom_target():
         openc2.utils.parse(v)
 
 
+def test_custom_target_embed():
+    @openc2.properties.CustomProperty(
+        "x-custom", [("custom", openc2.properties.StringProperty(fixed="custom"))]
+    )
+    class CustomProperty(object):
+        pass
+
+    @openc2.v10.CustomTarget(
+        "x-thing:custom",
+        [("custom", openc2.properties.EmbeddedObjectProperty(CustomProperty))],
+    )
+    class CustomTarget(object):
+        pass
+
+    foo = CustomTarget()
+    assert foo != None
+
+    with pytest.raises(openc2.exceptions.ExtraPropertiesError):
+        CustomTarget(bad="id")
+
+    with pytest.raises(openc2.exceptions.InvalidValueError):
+        bar = CustomProperty(custom="bad")
+
+    bar = CustomProperty(custom="custom")
+    foo = CustomTarget(custom=bar)
+    assert foo
+
+    assert foo.serialize() == '{"x-thing:custom": {"custom": "custom"}}'
+
+
 def test_multiple_custom_targets():
     @openc2.v10.CustomTarget("x-thing:id", [("id", openc2.properties.StringProperty())])
     class CustomTarget(object):
         pass
 
-    @openc2.v10.CustomTarget("x-thing:name", [("name", openc2.properties.StringProperty())])
+    @openc2.v10.CustomTarget(
+        "x-thing:name", [("name", openc2.properties.StringProperty())]
+    )
     class CustomTarget2(object):
         pass
 

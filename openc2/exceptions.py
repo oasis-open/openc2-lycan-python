@@ -66,6 +66,30 @@ class ExtraPropertiesError(PropertyPresenceError):
         super(ExtraPropertiesError, self).__init__(msg, cls)
 
 
+class ParseError(OpenC2Error):
+    """Could not parse object."""
+
+    def __init__(self, msg):
+        super(ParseError, self).__init__(msg)
+
+
+class CustomContentError(OpenC2Error):
+    """Custom OpenC2 Content (SDO, Observable, Extension, etc.) detected."""
+
+    def __init__(self, msg):
+        super(CustomContentError, self).__init__(msg)
+
+
+class OpenC2DeprecationWarning(DeprecationWarning):
+    """
+    Represents usage of a deprecated component of a OpenC2 specification.
+    """
+
+    pass
+
+
+# These aren't needed now, but might be needed in future language specifications
+
 # class MutuallyExclusivePropertiesError(PropertyPresenceError):
 #     """Violating interproperty mutually exclusive constraint of a OpenC2 object type."""
 
@@ -104,51 +128,3 @@ class ExtraPropertiesError(PropertyPresenceError):
 #         )
 
 #         super(AtLeastOnePropertyError, self).__init__(msg, cls)
-
-
-
-class ImmutableError(OpenC2Error):
-    """Attempted to modify an object after creation."""
-
-    def __init__(self, cls, key):
-        super(ImmutableError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
-        return msg.format(self)
-
-
-class UnmodifiablePropertyError(OpenC2Error):
-    """Attempted to modify an unmodifiable property of object when creating a new version."""
-
-    def __init__(self, unchangable_properties):
-        super(UnmodifiablePropertyError, self).__init__()
-        self.unchangable_properties = unchangable_properties
-
-    def __str__(self):
-        msg = "These properties cannot be changed when making a new version: {0}."
-        return msg.format(", ".join(self.unchangable_properties))
-
-
-class ParseError(OpenC2Error):
-    """Could not parse object."""
-
-    def __init__(self, msg):
-        super(ParseError, self).__init__(msg)
-
-
-class CustomContentError(OpenC2Error):
-    """Custom OpenC2 Content (SDO, Observable, Extension, etc.) detected."""
-
-    def __init__(self, msg):
-        super(CustomContentError, self).__init__(msg)
-
-
-class OpenC2DeprecationWarning(DeprecationWarning):
-    """
-    Represents usage of a deprecated component of a OpenC2 specification.
-    """
-
-    pass

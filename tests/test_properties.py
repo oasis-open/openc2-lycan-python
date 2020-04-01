@@ -79,7 +79,7 @@ def test_args_custom_embed_property():
     assert bar.value[0].value[0].value == "my_value"
 
     bar = MyCustomArgs(value=[foo, foo2])
-    print('bar', bar.serialize())
+    print("bar", bar.serialize())
     assert bar != None
     assert len(foo.value) > 0
     assert bar.value[0] != None
@@ -88,3 +88,38 @@ def test_args_custom_embed_property():
     assert bar.value[0].value[0].value == "my_value"
     assert bar.value[1].value[0] != None
     assert bar.value[1].value[0].value == "my_value2"
+
+
+def test_custom_property_fixed():
+    @openc2.properties.CustomProperty(
+        "x-custom-property", [("custom", openc2.properties.StringProperty())]
+    )
+    class MyCustomProp(object):
+        pass
+
+    foo = MyCustomProp(custom="custom_value")
+    assert foo.serialize() == '{"custom": "custom_value"}'
+
+    fixed = MyCustomProp(custom="fixed_value")
+
+    foo = MyCustomProp(fixed=fixed)
+    assert foo.serialize() == "{}"  # not required so can be empty
+
+    @openc2.properties.CustomProperty(
+        "x-custom", [("custom", openc2.properties.EmbeddedObjectProperty(foo))]
+    )
+    class EmbedCustomFixed(object):
+        pass
+
+    foo = EmbedCustomFixed()
+    assert foo != None
+    assert foo.serialize() == "{}"
+
+    with pytest.raises(openc2.exceptions.InvalidValueError):
+        EmbedCustomFixed(custom=MyCustomProp(custom="bad"))
+
+    foo = EmbedCustomFixed(custom=fixed)
+    assert foo.serialize() == '{"custom": {"custom": "fixed_value"}}'
+
+    foo = EmbedCustomFixed(custom={"custom": "fixed_value"})
+    assert foo.serialize() == '{"custom": {"custom": "fixed_value"}}'
