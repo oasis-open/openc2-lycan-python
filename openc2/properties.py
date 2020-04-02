@@ -191,7 +191,7 @@ class StringProperty(Property):
 class EnumProperty(StringProperty):
     def __init__(self, allowed, **kwargs):
         if type(allowed) is not list:
-            allowed = list(allowed)
+            raise ValueError("allowed must be a list")
         self.allowed = allowed
         super(EnumProperty, self).__init__(**kwargs)
 

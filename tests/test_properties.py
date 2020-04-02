@@ -234,6 +234,31 @@ def test_datetime_property():
         foo.datetime(sys.maxsize)
 
 
+def test_EnumProperty():
+    foo = openc2.properties.EnumProperty(["good", "very_good"])
+    assert foo.clean("good") == "good"
+    assert foo.clean("very_good") == "very_good"
+    with pytest.raises(ValueError):
+        foo.clean("bad")
+
+    with pytest.raises(ValueError):
+        openc2.properties.EnumProperty("good")
+
+
+def test_StringProperty():
+    foo = openc2.properties.StringProperty()
+    assert foo.clean("Hello") == "Hello"
+    assert foo.clean(1) == "1"
+
+
+def test_listproperty():
+    foo = openc2.properties.ListProperty(openc2.properties.StringProperty)
+    assert foo.clean("hello") == ["hello"]
+
+    with pytest.raises(ValueError):
+        foo.clean(1)
+
+
 def test_custom_property_fixed():
     @openc2.properties.CustomProperty(
         "x-custom-property", [("custom", openc2.properties.StringProperty())]
