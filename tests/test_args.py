@@ -2,6 +2,7 @@ import openc2
 import pytest
 import json
 import sys
+import datetime
 
 
 def test_args_response_requested():
@@ -31,10 +32,7 @@ def test_args_start_time():
         a = openc2.v10.Args(start_time=time)
         assert a.start_time == time
 
-    a = openc2.v10.Args(start_time=sys.maxsize)
-    assert a.start_time == sys.maxsize
-
-    invalid = ["a", "invalid", -1]
+    invalid = ["a", "invalid", sys.maxsize]
 
     for item in invalid:
         with pytest.raises(openc2.exceptions.InvalidValueError):
@@ -50,10 +48,7 @@ def test_args_stop_time():
         a = openc2.v10.Args(stop_time=time)
         assert a.stop_time == time
 
-    a = openc2.v10.Args(stop_time=sys.maxsize)
-    assert a.stop_time == sys.maxsize
-
-    invalid = ["a", "invalid", -1]
+    invalid = ["a", "invalid", sys.maxsize]
 
     for item in invalid:
         with pytest.raises(openc2.exceptions.InvalidValueError):
@@ -108,14 +103,14 @@ def test_args_allow_custom():
     bar = openc2.utils.parse_args(json.loads(foo.serialize()), allow_custom=True)
     assert foo == bar
 
-    bar = foo.clone(what='what')
-    assert foo.what == 'who' and bar.what == 'what'
+    bar = foo.clone(what="what")
+    assert foo.what == "who" and bar.what == "what"
     assert bar.item == a and foo.item == a
 
     try:
-        foo.clone(type='bad')
+        foo.clone(type="bad")
     except Exception as e:
-        assert 'These properties cannot be changed' in str(e)
+        assert "These properties cannot be changed" in str(e)
 
 
 def test_args_custom():

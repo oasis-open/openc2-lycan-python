@@ -2,6 +2,7 @@ import openc2
 import pytest
 import json
 import sys
+import datetime
 
 
 def test_args_custom_invalid_property():
@@ -147,7 +148,7 @@ def test_dictionary_property():
     try:
         foo.clean({"bad": "value"})
     except Exception as e:
-        assert 'Invalid dictionary key' in str(e)
+        assert "Invalid dictionary key" in str(e)
 
     foo = openc2.properties.DictionaryProperty(allowed_key_regex=r"^[a-zA-Z0-9_-]+$")
     with pytest.raises(openc2.exceptions.DictionaryKeyError):
@@ -173,6 +174,64 @@ def test_component_property():
 
     with pytest.raises(ValueError):
         foo.clean("bad")
+
+
+def test_datetime_property():
+    foo = openc2.properties.DateTimeProperty()
+    assert foo.clean(1) == 1
+    assert (
+        foo.clean(
+            datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        )
+        == 0
+    )
+    assert (
+        foo.clean(
+            datetime.datetime(1970, 1, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        )
+        == 3.6e6
+    )
+    assert (
+        foo.clean(
+            datetime.datetime(1970, 1, 1, 0, 1, 0, 0, tzinfo=datetime.timezone.utc)
+        )
+        == 60000
+    )
+    assert (
+        foo.clean(
+            datetime.datetime(1970, 1, 1, 0, 0, 1, 0, tzinfo=datetime.timezone.utc)
+        )
+        == 1000
+    )
+    assert (
+        foo.clean(
+            datetime.datetime(1970, 1, 1, 0, 0, 0, 1000, tzinfo=datetime.timezone.utc)
+        )
+        == 1
+    )
+
+    assert (
+        foo.clean(
+            datetime.datetime(1960, 1, 1, 0, 0, 0, 1000, tzinfo=datetime.timezone.utc)
+        )
+        == -315619199999
+    )
+    assert (
+        foo.clean(
+            datetime.datetime(
+                1969, 12, 31, 23, 59, 59, 999000, tzinfo=datetime.timezone.utc
+            )
+        )
+        == -1
+    )
+
+    assert foo.datetime(0) == datetime.datetime(1970, 1, 1, 0, 0, 0, 0)
+
+    with pytest.raises(ValueError):
+        foo.clean(sys.maxsize)
+
+    with pytest.raises(ValueError):
+        foo.datetime(sys.maxsize)
 
 
 def test_custom_property_fixed():

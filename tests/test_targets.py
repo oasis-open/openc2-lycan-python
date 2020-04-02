@@ -5,16 +5,15 @@ import json
 
 def test_ipv4_address_example():
     ip4 = openc2.v10.IPv4Address(ipv4_net="198.51.100.3")
-    assert ip4.type == 'ipv4_net'
-    assert ip4['type'] == 'ipv4_net'
-    assert ip4.get('type') == 'ipv4_net'
+    assert ip4.type == "ipv4_net"
+    assert ip4["type"] == "ipv4_net"
+    assert ip4.get("type") == "ipv4_net"
 
     with pytest.raises(AttributeError):
         ip4.bad
 
     with pytest.raises(openc2.exceptions.ImmutableError):
         ip4.type = "bad"
-
 
     try:
         ip4.type = "bad"

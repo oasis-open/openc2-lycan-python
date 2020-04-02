@@ -39,8 +39,8 @@ class Args(openc2.base._OpenC2Base):
     _type = "args"
     _properties = OrderedDict(
         [
-            ("start_time", openc2.properties.IntegerProperty(min=0)),
-            ("stop_time", openc2.properties.IntegerProperty(min=0)),
+            ("start_time", openc2.properties.DateTimeProperty()),
+            ("stop_time", openc2.properties.DateTimeProperty()),
             ("duration", openc2.properties.IntegerProperty(min=0)),
             (
                 "response_requested",

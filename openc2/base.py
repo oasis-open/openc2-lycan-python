@@ -32,6 +32,7 @@
 import copy
 import json
 from . import exceptions
+import datetime
 
 from collections.abc import Mapping
 
@@ -54,20 +55,13 @@ class OpenC2JSONEncoder(json.JSONEncoder):
                 return tmp_obj
         else:
             try:
-                # support stix2 objects, but stix2 isn't a dependency
+                # support stix2 objects even tho stix2 isn't a dependency
                 import stix2
 
-                try:
-                    return stix2.base.STIXJSONEncoder.default(self, obj)
-                except:
-                    return stix2.base.STIXJSONIncludeOptionalDefaultsEncoder.default(
-                        self, obj
-                    )
+                return stix2.base.STIXJSONEncoder.default(self, obj)
             except:
                 pass
 
-            if isinstance(obj, (dt.date, dt.datetime)):
-                return format_datetime(obj)
             return super(OpenC2JSONEncoder, self).default(obj)
 
 
@@ -275,8 +269,8 @@ class _OpenC2Base(Mapping):
         if unchangable_properties:
             raise exceptions.UnmodifiablePropertyError(unchangable_properties)
 
-        if 'allow_custom' not in kwargs:
-            kwargs['allow_custom'] = self._allow_custom
+        if "allow_custom" not in kwargs:
+            kwargs["allow_custom"] = self._allow_custom
 
         cls = type(self)
 

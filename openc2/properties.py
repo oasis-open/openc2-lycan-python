@@ -37,6 +37,7 @@ from . import utils
 from . import exceptions
 import re, inspect
 import itertools
+import datetime
 import copy
 from collections import OrderedDict
 
@@ -238,6 +239,27 @@ class IntegerProperty(Property):
             raise ValueError(msg)
 
         return value
+
+
+class DateTimeProperty(IntegerProperty):
+    """
+    Value is the number of milliseconds since 00:00:00 UTC, 1 January 1970
+    """
+
+    def __init__(self, **kwargs):
+        super(DateTimeProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        if isinstance(value, datetime.datetime):
+            value = value.astimezone(datetime.timezone.utc)
+            return super(DateTimeProperty, self).clean(value.timestamp() * 1000)
+
+        value = super(DateTimeProperty, self).clean(value)
+        self.datetime(value)
+        return value
+
+    def datetime(self, value):
+        return datetime.datetime.utcfromtimestamp(value / 1000.0)
 
 
 class FloatProperty(Property):

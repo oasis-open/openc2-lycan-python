@@ -140,6 +140,7 @@ class AtLeastOnePropertyError(PropertyPresenceError):
 
         super(AtLeastOnePropertyError, self).__init__(msg, cls)
 
+
 class UnmodifiablePropertyError(OpenC2Error):
     """Attempted to modify an unmodifiable property of object when creating a new version."""
 
@@ -150,6 +151,7 @@ class UnmodifiablePropertyError(OpenC2Error):
     def __str__(self):
         msg = "These properties cannot be changed when making a new version: {0}."
         return msg.format(", ".join(self.unchangable_properties))
+
 
 # These aren't needed now, but might be needed in future language specifications
 
