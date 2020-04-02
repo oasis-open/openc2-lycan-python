@@ -19,6 +19,7 @@ $ pip install openc2
 
 ```python
 import openc2
+import stix2
 
 # encode
 cmd = openc2.v10.Command(
@@ -41,7 +42,7 @@ if cmd.action == "deny" and cmd.target.type == "ipv4_net":
     "x-acme-widget",
     [
         ("name", openc2.properties.StringProperty(required=True)),
-        ("version", openc2.properties.FloatProperty()),
+        ("version", stix2.properties.FloatProperty()),
     ],
 )
 class AcmeWidgetActuator(object):

@@ -1,5 +1,6 @@
 def test_readme():
     import openc2
+    import stix2
 
     # encode
     cmd = openc2.v10.Command(
@@ -22,7 +23,7 @@ def test_readme():
         "x-acme-widget",
         [
             ("name", openc2.properties.StringProperty(required=True)),
-            ("version", openc2.properties.FloatProperty()),
+            ("version", stix2.properties.FloatProperty()),
         ],
     )
     class AcmeWidgetActuator(object):
@@ -31,3 +32,4 @@ def test_readme():
                 raise ValueError("'%f' is not a supported version." % version)
 
     widget = AcmeWidgetActuator(name="foo", version=1.1)
+    assert widget.serialize() == '{"x-acme-widget": {"name": "foo", "version": 1.1}}'

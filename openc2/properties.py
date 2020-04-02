@@ -300,24 +300,27 @@ class PayloadProperty(Property):
 class ProcessProperty(Property):
     def clean(self, value):
         from .v10.targets import Process
-        if value.get('process'):
-            process = Process(**value.get('process'))
+
+        if value.get("process"):
+            process = Process(**value.get("process"))
         else:
             process = Process(**value)
         return process
 
 
-
 class FileProperty(Property):
     def __init__(self, required=False, fixed=None, default=None, version="1.0"):
-        super(FileProperty, self).__init__(required=required, fixed=fixed, default=default)
+        super(FileProperty, self).__init__(
+            required=required, fixed=fixed, default=default
+        )
         self._version = version
 
     def clean(self, value):
         if self._version == "1.0":
             from .v10.targets import File
-            if value.get('file'):
-                file = File(**value.get('file'))
+
+            if value.get("file"):
+                file = File(**value.get("file"))
             else:
                 file = File(**value)
             return file

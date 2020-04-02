@@ -108,6 +108,15 @@ def test_args_allow_custom():
     bar = openc2.utils.parse_args(json.loads(foo.serialize()), allow_custom=True)
     assert foo == bar
 
+    bar = foo.clone(what='what')
+    assert foo.what == 'who' and bar.what == 'what'
+    assert bar.item == a and foo.item == a
+
+    try:
+        foo.clone(type='bad')
+    except Exception as e:
+        assert 'These properties cannot be changed' in str(e)
+
 
 def test_args_custom():
     with pytest.raises(openc2.exceptions.PropertyPresenceError):

@@ -229,7 +229,6 @@ class Process(openc2.base._Target):
         self.check_at_least_one_property()
 
 
-
 class Properties(openc2.base._Target):
     _type = "properties"
     _properties = OrderedDict(

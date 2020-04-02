@@ -79,6 +79,7 @@ class CustomContentError(OpenC2Error):
     def __init__(self, msg):
         super(CustomContentError, self).__init__(msg)
 
+
 class ImmutableError(OpenC2Error):
     """Attempted to modify an object after creation."""
 
@@ -90,6 +91,7 @@ class ImmutableError(OpenC2Error):
     def __str__(self):
         msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
         return msg.format(self)
+
 
 class DictionaryKeyError(ObjectConfigurationError):
     """Dictionary key does not conform to the correct format."""
@@ -103,6 +105,7 @@ class DictionaryKeyError(ObjectConfigurationError):
         msg = "Invalid dictionary key {0.key}: ({0.reason})."
         return msg.format(self)
 
+
 class OpenC2DeprecationWarning(DeprecationWarning):
     """
     Represents usage of a deprecated component of a OpenC2 specification.
@@ -111,20 +114,44 @@ class OpenC2DeprecationWarning(DeprecationWarning):
     pass
 
 
+class MutuallyExclusivePropertiesError(PropertyPresenceError):
+    """Violating interproperty mutually exclusive constraint of a OpenC2 object type."""
+
+    def __init__(self, cls, properties):
+        self.properties = sorted(properties)
+
+        msg = "The ({1}) properties for {0} are mutually exclusive.".format(
+            cls.__name__, ", ".join(x for x in self.properties),
+        )
+
+        super(MutuallyExclusivePropertiesError, self).__init__(msg, cls)
+
+
+class AtLeastOnePropertyError(PropertyPresenceError):
+    """Violating a constraint of a OpenC2 object type that at least one of the given properties must be populated."""
+
+    def __init__(self, cls, properties):
+        self.properties = sorted(properties)
+
+        msg = (
+            "At least one of the ({1}) properties for {0} must be "
+            "populated.".format(cls.__name__, ", ".join(x for x in self.properties),)
+        )
+
+        super(AtLeastOnePropertyError, self).__init__(msg, cls)
+
+class UnmodifiablePropertyError(OpenC2Error):
+    """Attempted to modify an unmodifiable property of object when creating a new version."""
+
+    def __init__(self, unchangable_properties):
+        super(UnmodifiablePropertyError, self).__init__()
+        self.unchangable_properties = unchangable_properties
+
+    def __str__(self):
+        msg = "These properties cannot be changed when making a new version: {0}."
+        return msg.format(", ".join(self.unchangable_properties))
+
 # These aren't needed now, but might be needed in future language specifications
-
-# class MutuallyExclusivePropertiesError(PropertyPresenceError):
-#     """Violating interproperty mutually exclusive constraint of a OpenC2 object type."""
-
-#     def __init__(self, cls, properties):
-#         self.properties = sorted(properties)
-
-#         msg = "The ({1}) properties for {0} are mutually exclusive.".format(
-#             cls.__name__, ", ".join(x for x in self.properties),
-#         )
-
-#         super(MutuallyExclusivePropertiesError, self).__init__(msg, cls)
-
 
 # class DependentPropertiesError(PropertyPresenceError):
 #     """Violating interproperty dependency constraint of a OpenC2 object type."""
@@ -137,17 +164,3 @@ class OpenC2DeprecationWarning(DeprecationWarning):
 #         )
 
 #         super(DependentPropertiesError, self).__init__(msg, cls)
-
-
-# class AtLeastOnePropertyError(PropertyPresenceError):
-#     """Violating a constraint of a OpenC2 object type that at least one of the given properties must be populated."""
-
-#     def __init__(self, cls, properties):
-#         self.properties = sorted(properties)
-
-#         msg = (
-#             "At least one of the ({1}) properties for {0} must be "
-#             "populated.".format(cls.__name__, ", ".join(x for x in self.properties),)
-#         )
-
-#         super(AtLeastOnePropertyError, self).__init__(msg, cls)

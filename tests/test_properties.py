@@ -89,12 +89,14 @@ def test_args_custom_embed_property():
     assert bar.value[1].value[0] != None
     assert bar.value[1].value[0].value == "my_value2"
 
+
 def test_binary_property():
     foo = openc2.properties.BinaryProperty()
     assert foo.clean("RXZlcldhdGNo") == "RXZlcldhdGNo"
 
     with pytest.raises(ValueError):
         foo.clean("bad")
+
 
 def test_integer_property():
     foo = openc2.properties.IntegerProperty()
@@ -113,6 +115,7 @@ def test_integer_property():
     with pytest.raises(ValueError):
         foo.clean(11)
 
+
 def test_float_property():
     foo = openc2.properties.FloatProperty()
     assert foo.clean(1.0) == 1.0
@@ -130,6 +133,7 @@ def test_float_property():
     with pytest.raises(ValueError):
         foo.clean(11.0)
 
+
 def test_dictionary_property():
     foo = openc2.properties.DictionaryProperty()
     assert foo.clean({"key": "value"}) == {"key": "value"}
@@ -140,12 +144,15 @@ def test_dictionary_property():
     foo = openc2.properties.DictionaryProperty(allowed_keys=["key"])
     assert foo.clean({"key": "value"}) == {"key": "value"}
 
-    with pytest.raises(openc2.exceptions.DictionaryKeyError):
+    try:
         foo.clean({"bad": "value"})
+    except Exception as e:
+        assert 'Invalid dictionary key' in str(e)
 
     foo = openc2.properties.DictionaryProperty(allowed_key_regex=r"^[a-zA-Z0-9_-]+$")
     with pytest.raises(openc2.exceptions.DictionaryKeyError):
         foo.clean({"😈": "bad"})
+
 
 def test_file_property():
     foo = openc2.properties.FileProperty()
@@ -153,6 +160,7 @@ def test_file_property():
 
     foo = openc2.properties.FileProperty(version="0.0")
     assert foo.clean("bad") == "bad"
+
 
 def test_component_property():
     foo = openc2.properties.ComponentProperty()
@@ -165,6 +173,7 @@ def test_component_property():
 
     with pytest.raises(ValueError):
         foo.clean("bad")
+
 
 def test_custom_property_fixed():
     @openc2.properties.CustomProperty(

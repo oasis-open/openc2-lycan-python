@@ -132,18 +132,19 @@ class _OpenC2Base(Mapping):
         ):
             raise exceptions.AtLeastOnePropertyError(self.__class__, list_of_properties)
 
-    def check_properties_dependency(
-        self, list_of_properties, list_of_dependent_properties
-    ):
-        failed_dependency_pairs = []
-        for p in list_of_properties:
-            for dp in list_of_dependent_properties:
-                if not self.get(p) and self.get(dp):
-                    failed_dependency_pairs.append((p, dp))
-        if failed_dependency_pairs:
-            raise exceptions.DependentPropertiesError(
-                self.__class__, failed_dependency_pairs
-            )
+    # this isn't used, but may be used in the future
+    # def check_properties_dependency(
+    #     self, list_of_properties, list_of_dependent_properties
+    # ):
+    #     failed_dependency_pairs = []
+    #     for p in list_of_properties:
+    #         for dp in list_of_dependent_properties:
+    #             if not self.get(p) and self.get(dp):
+    #                 failed_dependency_pairs.append((p, dp))
+    #     if failed_dependency_pairs:
+    #         raise exceptions.DependentPropertiesError(
+    #             self.__class__, failed_dependency_pairs
+    #         )
 
     def check_object_constraints(self):
         """
@@ -156,20 +157,14 @@ class _OpenC2Base(Mapping):
         self._allow_custom = allow_custom
 
         # Detect any keyword arguments not allowed for a specific type
-        custom_props = kwargs.pop("custom_properties", {})
-        if custom_props and not isinstance(custom_props, dict):
-            raise ValueError("'custom_properties' must be a dictionary")
         if not self._allow_custom:
             extra_kwargs = list(set(kwargs) - set(self._properties))
             if extra_kwargs:
                 raise exceptions.ExtraPropertiesError(cls, extra_kwargs)
-        if custom_props:
-            self._allow_custom = True
 
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}
         props = kwargs.copy()
-        props.update(custom_props)
         for prop_name, prop_value in props.items():
             if prop_value is not None and prop_value != []:
                 setting_kwargs[prop_name] = prop_value
@@ -268,7 +263,7 @@ class _OpenC2Base(Mapping):
         """
         Clone and object and assign new values
         """
-        if not isinstance(self, collections.Mapping):
+        if not isinstance(self, Mapping):
             raise ValueError(
                 "cannot create new version of object of this type! "
                 "Try a dictionary or instance of an SDO or SRO class.",
@@ -288,6 +283,9 @@ class _OpenC2Base(Mapping):
                 unchangable_properties.append(prop)
         if unchangable_properties:
             raise exceptions.UnmodifiablePropertyError(unchangable_properties)
+
+        if 'allow_custom' not in kwargs:
+            kwargs['allow_custom'] = self._allow_custom
 
         cls = type(self)
 
