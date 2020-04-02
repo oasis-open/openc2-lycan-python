@@ -40,11 +40,7 @@ import itertools
 import datetime
 import copy
 from collections import OrderedDict
-
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
+from collections.abc import Mapping
 
 
 class Property(object):

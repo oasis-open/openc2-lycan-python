@@ -122,3 +122,22 @@ def test_stix2_indicator():
         '"pattern": "[file:hashes.md5 = \'d41d8cd98f00b204e9800998ecf8427e\']"'
         in foo.serialize()
     )
+
+
+def test_EmbeddedObjectProperty():
+    foo = openc2.properties.EmbeddedObjectProperty(stix2.Indicator)
+
+    indicator = stix2.Indicator(
+        name="File hash for malware variant",
+        labels=["malicious-activity"],
+        pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+    )
+
+    assert foo.clean(indicator).serialize() == indicator.serialize()
+    assert (
+        foo.clean(json.loads(indicator.serialize())).serialize()
+        == indicator.serialize()
+    )
+
+    with pytest.raises(ValueError):
+        foo.clean("bad").serialize()

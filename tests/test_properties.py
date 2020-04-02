@@ -249,9 +249,16 @@ def test_custom_property_fixed():
     foo = MyCustomProp(fixed=fixed)
     assert foo.serialize() == "{}"  # not required so can be empty
 
-    @openc2.properties.CustomProperty(
-        "x-custom", [("custom", openc2.properties.EmbeddedObjectProperty(foo))]
-    )
+    bar = openc2.properties.EmbeddedObjectProperty(foo)
+
+    assert bar.clean({"custom": "fixed_value"}) == {"custom": "fixed_value"}
+    with pytest.raises(ValueError):
+        bar.clean({"custom": "bad"})
+
+    with pytest.raises(ValueError):
+        bar.clean({"bad": "fixed_value"})
+
+    @openc2.properties.CustomProperty("x-custom", [("custom", bar)])
     class EmbedCustomFixed(object):
         pass
 
