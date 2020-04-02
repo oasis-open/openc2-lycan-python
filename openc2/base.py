@@ -201,9 +201,6 @@ class _OpenC2Base(Mapping):
             kwargs.update({"indent": 4, "separators": (",", ": ")})
         return json.dumps(self, cls=OpenC2JSONEncoder, **kwargs)
 
-    def __getitem__(self, key):
-        return self._inner[key]
-
     def __iter__(self):
         return iter(self._inner)
 
@@ -263,12 +260,6 @@ class _OpenC2Base(Mapping):
         """
         Clone and object and assign new values
         """
-        if not isinstance(self, Mapping):
-            raise ValueError(
-                "cannot create new version of object of this type! "
-                "Try a dictionary or instance of an SDO or SRO class.",
-            )
-
         unchangable_properties = []
 
         try:
