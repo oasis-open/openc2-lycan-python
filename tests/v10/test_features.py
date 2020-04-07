@@ -1,7 +1,6 @@
 import openc2
 import pytest
 import json
-import stix2.exceptions
 
 
 def test_features_empty():
@@ -23,12 +22,12 @@ def test_features_empty():
     assert f.features[0] == "pairs"
     assert f.features[1] == "versions"
 
-    with pytest.raises(stix2.exceptions.InvalidValueError):
+    with pytest.raises(openc2.exceptions.InvalidValueError):
         openc2.v10.Features(["invalid"])
 
 
 def test_features_unique():
     # A Producer MUST NOT send a list containing more than one instance of any Feature.
     # items must be unique
-    with pytest.raises(stix2.exceptions.InvalidValueError):
+    with pytest.raises(openc2.exceptions.InvalidValueError):
         openc2.v10.Features(["versions"] * 2)

@@ -29,8 +29,6 @@
 
 """
 
-# from stix2 import properties
-# from ..base import _Actuator
 from ..custom import _custom_actuator_builder
 
 import itertools

@@ -2,7 +2,7 @@ import openc2
 import pytest
 import json
 import sys
-import stix2.exceptions
+import datetime
 
 
 def test_args_response_requested():
@@ -14,7 +14,7 @@ def test_args_response_requested():
         b = openc2.v10.Args(**ser_a)
         assert a == b
 
-    with pytest.raises(stix2.exceptions.InvalidValueError):
+    with pytest.raises(openc2.exceptions.InvalidValueError):
         openc2.v10.Args(response_requested="bad")
 
 
@@ -32,13 +32,10 @@ def test_args_start_time():
         a = openc2.v10.Args(start_time=time)
         assert a.start_time == time
 
-    a = openc2.v10.Args(start_time=sys.maxsize)
-    assert a.start_time == sys.maxsize
-
-    invalid = ["a", "invalid", -1]
+    invalid = ["a", "invalid", sys.maxsize]
 
     for item in invalid:
-        with pytest.raises(stix2.exceptions.InvalidValueError):
+        with pytest.raises(openc2.exceptions.InvalidValueError):
             openc2.v10.Args(start_time=item)
 
     # xxx: floats are currently valid and passing
@@ -51,13 +48,10 @@ def test_args_stop_time():
         a = openc2.v10.Args(stop_time=time)
         assert a.stop_time == time
 
-    a = openc2.v10.Args(stop_time=sys.maxsize)
-    assert a.stop_time == sys.maxsize
-
-    invalid = ["a", "invalid", -1]
+    invalid = ["a", "invalid", sys.maxsize]
 
     for item in invalid:
-        with pytest.raises(stix2.exceptions.InvalidValueError):
+        with pytest.raises(openc2.exceptions.InvalidValueError):
             openc2.v10.Args(stop_time=item)
 
     # xxx: floats etc is currently valid and passing
@@ -76,18 +70,23 @@ def test_args_duration():
     invalid = ["a", "invalid", -1]
 
     for item in invalid:
-        with pytest.raises(stix2.exceptions.InvalidValueError):
+        with pytest.raises(openc2.exceptions.InvalidValueError):
             openc2.v10.Args(duration=item)
+
+    try:
+        openc2.v10.Args(duration=invalid[0])
+    except Exception as e:
+        assert "Invalid value" in str(e)
 
     # xxx: floats etc is currently valid and passing
 
 
 def test_args_combination():
     # Only two of the three are allowed on any given Command and the third is derived from the equation stop_time = start_time + duration.
-    with pytest.raises(stix2.exceptions.PropertyPresenceError):
+    with pytest.raises(openc2.exceptions.PropertyPresenceError):
         openc2.v10.Args(start_time=1, stop_time=1, duration=1)
 
-    with pytest.raises(stix2.exceptions.InvalidValueError):
+    with pytest.raises(openc2.exceptions.InvalidValueError):
         openc2.v10.Args(start_time=1, stop_time=0)
 
 
@@ -96,57 +95,70 @@ def test_args_allow_custom():
     foo = openc2.v10.Args(allow_custom=True, what="who", item=a)
 
     with pytest.raises(AttributeError):
-        openc2.core.parse_args(foo.serialize())
+        openc2.utils.parse_args(foo.serialize())
 
-    with pytest.raises(stix2.exceptions.CustomContentError):
-        bar = openc2.core.parse_args(json.loads(foo.serialize()))
+    with pytest.raises(openc2.exceptions.CustomContentError):
+        bar = openc2.utils.parse_args(json.loads(foo.serialize()))
 
-    bar = openc2.core.parse_args(json.loads(foo.serialize()), allow_custom=True)
+    bar = openc2.utils.parse_args(json.loads(foo.serialize()), allow_custom=True)
     assert foo == bar
+
+    bar = foo.clone(what="what")
+    assert foo.what == "who" and bar.what == "what"
+    assert bar.item == a and foo.item == a
+
+    try:
+        foo.clone(type="bad")
+    except Exception as e:
+        assert "These properties cannot be changed" in str(e)
 
 
 def test_args_custom():
-    with pytest.raises(stix2.exceptions.PropertyPresenceError):
+    with pytest.raises(openc2.exceptions.PropertyPresenceError):
 
-        @openc2.CustomArgs("custom-args", [("type", stix2.properties.StringProperty())])
+        @openc2.v10.CustomArgs(
+            "custom-args", [("type", openc2.properties.StringProperty())]
+        )
         class MyCustomArgs(object):
             pass
 
     with pytest.raises(TypeError):
 
-        @openc2.CustomArgs("custom-args", ("type", stix2.properties.StringProperty()))
+        @openc2.v10.CustomArgs(
+            "custom-args", ("type", openc2.properties.StringProperty())
+        )
         class MyCustomArgs(object):
             pass
 
     with pytest.raises(ValueError):
 
-        @openc2.CustomArgs("custom-args", [])
+        @openc2.v10.CustomArgs("custom-args", [])
         class MyCustomArgs(object):
             pass
 
-    @openc2.CustomArgs("custom-args", [("id", stix2.properties.StringProperty())])
+    @openc2.v10.CustomArgs("custom-args", [("id", openc2.properties.StringProperty())])
     class MyCustomArgs(object):
         pass
 
     foo = MyCustomArgs(id="value")
     assert foo.id == "value"
 
-    bar = openc2.core.parse_args(json.loads(foo.serialize()), allow_custom=True)
+    bar = openc2.utils.parse_args(json.loads(foo.serialize()), allow_custom=True)
     assert bar == foo
 
     args = {"custom-args": json.loads(foo.serialize())}
 
-    bar = openc2.core.parse_args(args, allow_custom=True)
+    bar = openc2.utils.parse_args(args, allow_custom=True)
     assert bar["custom-args"] == foo
 
     args = {"bad-custom-args": json.loads(foo.serialize())}
 
-    with pytest.raises(stix2.exceptions.CustomContentError):
-        bar = openc2.core.parse_args(args)
+    with pytest.raises(openc2.exceptions.CustomContentError):
+        bar = openc2.utils.parse_args(args)
 
     args = {"custom-args": MyCustomArgs(id="value")}
-    bar = openc2.core.parse_args(args, allow_custom=True)
+    bar = openc2.utils.parse_args(args, allow_custom=True)
 
-    args = {"custom-args": openc2.Args(id="value", allow_custom=True)}
+    args = {"custom-args": openc2.v10.Args(id="value", allow_custom=True)}
     with pytest.raises(ValueError):
-        openc2.core.parse_args(args)
+        openc2.utils.parse_args(args)

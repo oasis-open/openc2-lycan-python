@@ -29,25 +29,18 @@
 
 """
 
-from stix2.properties import (
-    EnumProperty,
-    DictionaryProperty,
-    IntegerProperty,
-    StringProperty,
-)
-from ..properties import TargetProperty, ActuatorProperty, ArgsProperty
-from ..base import _OpenC2Base, _Target
+import openc2
 
 from collections import OrderedDict
 
 
-class Command(_OpenC2Base):
+class Command(openc2.base._OpenC2Base):
     _type = "command"
     _properties = OrderedDict(
         [
             (
                 "action",
-                EnumProperty(
+                openc2.properties.EnumProperty(
                     allowed=[
                         "scan",
                         "locate",
@@ -73,20 +66,20 @@ class Command(_OpenC2Base):
                     required=True,
                 ),
             ),
-            ("target", TargetProperty(required=True)),
-            ("args", ArgsProperty()),
-            ("actuator", ActuatorProperty()),
-            ("command_id", StringProperty()),
+            ("target", openc2.properties.TargetProperty(required=True)),
+            ("args", openc2.properties.ArgsProperty()),
+            ("actuator", openc2.properties.ActuatorProperty()),
+            ("command_id", openc2.properties.StringProperty()),
         ]
     )
 
 
-class Response(_OpenC2Base):
+class Response(openc2.base._OpenC2Base):
     _type = "response"
     _properties = OrderedDict(
         [
-            ("status", IntegerProperty(required=True)),
-            ("status_text", StringProperty()),
-            ("results", DictionaryProperty()),
+            ("status", openc2.properties.IntegerProperty(required=True)),
+            ("status_text", openc2.properties.StringProperty()),
+            ("results", openc2.properties.DictionaryProperty()),
         ]
     )

@@ -39,14 +39,16 @@ setup(
     name='openc2',
     version=get_version(),
     description='Produce and consume OpenC2 JSON messages',
+    author='OASIS Open Command and Control (OpenC2) Technical Committee (TC)',
     url='https://github.com/oasis-open/openc2-lycan-python',
+    long_description_content_type='text/markdown',
+    long_description=open('README.md').read(),
+    keywords='openc2 cyber',
     packages=find_packages(exclude=["tests"]),
     license='MIT',
     include_package_data=True,
-    long_description_content_type='text/markdown',
-    long_description=open('README.md').read(),
-    install_requires=[
-        'six',
-        'stix2'
-    ],
+    install_requires=[],
+    extra_require={
+        'stix': ['stix2']
+    }
 )

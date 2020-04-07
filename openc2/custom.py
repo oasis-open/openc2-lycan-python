@@ -30,15 +30,20 @@
 """
 
 from collections import OrderedDict
-import stix2
-from stix2.base import _cls_init
 from .base import _OpenC2Base, _Target, _Actuator
 from .core import OPENC2_OBJ_MAPS, _register_extension
+from . import exceptions
+from . import properties as openc2_properties
+
+
+def _cls_init(cls, obj, kwargs):
+    if getattr(cls, "__init__", object.__init__) is not object.__init__:
+        cls.__init__(obj, **kwargs)
 
 
 def _check_custom_properties(cls, properties):
     if "type" in properties.keys():
-        raise stix2.exceptions.PropertyPresenceError("'type' is reserved", cls)
+        raise exceptions.PropertyPresenceError("'type' is reserved", cls)
 
 
 def _custom_target_builder(cls, type, properties, version):
@@ -123,9 +128,7 @@ def _custom_args_builder(cls, type, properties, version):
 
 
 def _custom_property_builder(cls, type, properties, version):
-    import stix2
-
-    class _CustomProperty(cls, _OpenC2Base, stix2.properties.Property):
+    class _CustomProperty(cls, _OpenC2Base, openc2_properties.Property):
 
         if not properties or not isinstance(properties, list):
             raise ValueError(
@@ -140,20 +143,15 @@ def _custom_property_builder(cls, type, properties, version):
         def __init__(
             self, required=False, fixed=None, default=None, allow_custom=False, **kwargs
         ):
-            self.required = required
-            if fixed:
-                self._fixed_value = fixed
-                self.clean = self._default_clean
-                self.default = lambda: fixed
-            if default:
-                self.default = default
 
             _OpenC2Base.__init__(self, allow_custom=allow_custom, **kwargs)
             _cls_init(cls, self, kwargs)
+            openc2_properties.Property.__init__(
+                self, required=required, fixed=fixed, default=default
+            )
 
-        def __setattr__(self, name, value):
-            # _OpenC2Base is immutable so we have to override that functionality
-            cls.__setattr__(self, name, value)
+            if kwargs:
+                self.clean(self)
 
         def __call__(self, _value=None, **kwargs):
             """__init__ for when using an instance
@@ -162,7 +160,9 @@ def _custom_property_builder(cls, type, properties, version):
             """
             if _value:
                 return _value
-            return self.__class__(**kwargs)
+
+            value = self.__class__(**kwargs)
+            return self.clean(value)
 
     _register_extension(_CustomProperty, object_type="properties", version=version)
     return _CustomProperty

@@ -5,7 +5,7 @@
 
 Lycan is an implementation of the OpenC2 OASIS standard for command and control messaging. The current implementation is based on the Language Specification v1.0.
 
-Given the influence of STIX/CyBoX on OpenC2, this library extends the [STIX 2 Python API](https://github.com/oasis-open/cti-python-stix2) internals. Property validation and object extension support aligns with STIX2 conventions.
+Given the influence of STIX/CyBoX on OpenC2, this library is heavily based on the [STIX 2 Python API](https://github.com/oasis-open/cti-python-stix2) internals. Property validation and object extension support aligns with STIX2 conventions and OpenC2 custom properties also support stix2 properties.
 
 ## Installation
 
@@ -18,33 +18,33 @@ $ pip install openc2
 ## Usage
 
 ```python
-import iptc
-from openc2 import parse, IPv4Address, Command, Response, Args
+import openc2
+import stix2
 
 # encode
-cmd = Command(action = "deny",
-              target = IPv4Address(ipv4_net = "1.2.3.4"),
-              args = Args(response_requested = "complete"))
+cmd = openc2.v10.Command(
+    action="deny",
+    target=openc2.v10.IPv4Address(ipv4_net="1.2.3.4"),
+    args=openc2.v10.Args(response_requested="complete"),
+)
 msg = cmd.serialize()
 
 # decode
-cmd = parse(msg)
+cmd = openc2.parse(msg)
 if cmd.action == "deny" and cmd.target.type == "ipv4_net":
-    rule = iptc.Rule()
-    rule.create_match(cmd.target.ipv4_net)
-    rule.create_target("DROP")
 
-    if cmd.args.response_requested == 'complete':
-        resp = Response(status=200)
+    if cmd.args.response_requested == "complete":
+        resp = openc2.v10.Response(status=200)
         msg = resp.serialize()
 
 # custom actuator
-from openc2 import CustomActuator
-from stix2 import properties
-@CustomActuator('x-acme-widget', [
-    ('name', properties.StringProperty(required=True)),
-    ('version', properties.FloatProperty())
-])
+@openc2.v10.CustomActuator(
+    "x-acme-widget",
+    [
+        ("name", openc2.properties.StringProperty(required=True)),
+        ("version", stix2.properties.FloatProperty()),
+    ],
+)
 class AcmeWidgetActuator(object):
     def __init__(self, version=None, **kwargs):
         if version and version < 1.0:

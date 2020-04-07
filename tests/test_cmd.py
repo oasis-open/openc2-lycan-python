@@ -2,51 +2,50 @@ import openc2
 import pytest
 import json
 import sys
-import stix2
 
 
 def test_cmd_create():
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
-        openc2.Command()
+    with pytest.raises(openc2.exceptions.MissingPropertiesError):
+        openc2.v10.Command()
 
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
-        openc2.Command(action="query")
+    with pytest.raises(openc2.exceptions.MissingPropertiesError):
+        openc2.v10.Command(action="query")
 
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
-        openc2.Command(target=openc2.Features())
+    with pytest.raises(openc2.exceptions.MissingPropertiesError):
+        openc2.v10.Command(target=openc2.v10.Features())
 
-    foo = openc2.Command(action="query", target=openc2.Features())
+    foo = openc2.v10.Command(action="query", target=openc2.v10.Features())
     assert foo
     assert foo.action == "query"
     assert foo.target.features == []
     assert '"action": "query"' in foo.serialize()
     assert '"target": {"features": []}' in foo.serialize()
 
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert bar == foo
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
 
     d = json.loads(foo.serialize())
-    foo = openc2.core.dict_to_openc2(d)
+    foo = openc2.utils.dict_to_openc2(d)
     d["invalid"] = {"bad": "value"}
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
-        openc2.core.dict_to_openc2(d)
+    with pytest.raises(openc2.exceptions.ExtraPropertiesError):
+        openc2.utils.dict_to_openc2(d)
 
-    with pytest.raises(stix2.exceptions.InvalidValueError):
-        openc2.Command(action="invalid", target=openc2.Features())
+    with pytest.raises(openc2.exceptions.InvalidValueError):
+        openc2.v10.Command(action="invalid", target=openc2.v10.Features())
 
-    with pytest.raises(stix2.exceptions.InvalidValueError):
-        openc2.Command(action="query", target=openc2.Args())
+    with pytest.raises(openc2.exceptions.InvalidValueError):
+        openc2.v10.Command(action="query", target=openc2.v10.Args())
 
 
 def test_cmd_custom_actuator():
-    @openc2.CustomActuator(
+    @openc2.v10.CustomActuator(
         "x-acme-widget",
         [
-            ("name", stix2.properties.StringProperty(required=True)),
-            ("version", stix2.properties.FloatProperty()),
+            ("name", openc2.properties.StringProperty(required=True)),
+            ("version", openc2.properties.FloatProperty()),
         ],
     )
     class AcmeWidgetActuator(object):
@@ -55,13 +54,15 @@ def test_cmd_custom_actuator():
                 raise ValueError("'%f' is not a supported version." % version)
 
     widget = AcmeWidgetActuator(name="foo", version=1.1)
-    foo = openc2.Command(action="query", target=openc2.Features(), actuator=widget)
+    foo = openc2.v10.Command(
+        action="query", target=openc2.v10.Features(), actuator=widget
+    )
     assert foo
     assert foo.action == "query"
     assert foo.actuator.name == "foo"
     assert foo.actuator.version == 1.1
 
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert bar == foo
 
     bar = openc2.parse(foo.serialize())
@@ -69,8 +70,10 @@ def test_cmd_custom_actuator():
 
 
 def test_cmd_slpf_actuator():
-    widget = openc2.SLPFActuator(hostname="localhost")
-    foo = openc2.Command(action="query", target=openc2.Features(), actuator=widget)
+    widget = openc2.v10.SLPFActuator(hostname="localhost")
+    foo = openc2.v10.Command(
+        action="query", target=openc2.v10.Features(), actuator=widget
+    )
     assert foo
     assert foo.action == "query"
     assert foo.actuator.hostname == "localhost"
@@ -78,7 +81,7 @@ def test_cmd_slpf_actuator():
     assert '"target": {"features": []}' in foo.serialize()
     assert '"actuator": {"slpf": {"hostname": "localhost"}}' in foo.serialize()
 
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert bar == foo
 
     bar = openc2.parse(foo.serialize())
@@ -89,26 +92,28 @@ def test_cmd_custom():
     @openc2.properties.CustomProperty(
         "x-thing",
         [
-            ("uid", stix2.properties.StringProperty()),
-            ("name", stix2.properties.StringProperty()),
-            ("version", stix2.properties.StringProperty()),
+            ("uid", openc2.properties.StringProperty()),
+            ("name", openc2.properties.StringProperty()),
+            ("version", openc2.properties.StringProperty()),
         ],
     )
     class CustomTargetProperty(object):
         pass
 
-    @openc2.CustomTarget("x-thing:id", [("id", CustomTargetProperty())])
+    @openc2.v10.CustomTarget("x-thing:id", [("id", CustomTargetProperty())])
     class CustomTarget(object):
         pass
 
-    @openc2.CustomArgs("whatever-who-cares", [("custom_args", CustomTargetProperty())])
+    @openc2.v10.CustomArgs(
+        "whatever-who-cares", [("custom_args", CustomTargetProperty())]
+    )
     class CustomArgs(object):
         pass
 
-    @openc2.CustomActuator(
+    @openc2.v10.CustomActuator(
         "x-acme-widget",
         [
-            ("name", stix2.properties.StringProperty(required=True)),
+            ("name", openc2.properties.StringProperty(required=True)),
             ("version", CustomTargetProperty()),
         ],
     )
@@ -121,14 +126,14 @@ def test_cmd_custom():
     act = AcmeWidgetActuator(
         name="hello", version=CustomTargetProperty(name="actuator")
     )
-    cmd = openc2.Command(action="query", target=t, args=args, actuator=act)
+    cmd = openc2.v10.Command(action="query", target=t, args=args, actuator=act)
 
     bar = openc2.parse(cmd.serialize())
     assert cmd == bar
     bar = openc2.parse(json.loads(cmd.serialize()))
     assert cmd == bar
 
-    bar = openc2.Command(**json.loads(cmd.serialize()))
+    bar = openc2.v10.Command(**json.loads(cmd.serialize()))
     assert cmd == bar
 
 
@@ -146,7 +151,7 @@ def test_cmd_device():
 """
     foo = openc2.parse(gen)
     assert foo.action == "allow"
-    assert isinstance(foo.target, openc2.Device)
+    assert isinstance(foo.target, openc2.v10.Device)
     assert foo.target.hostname == "device hostname"
     assert foo.target.idn_hostname == "device idn hostname"
     assert foo.target.device_id == "Device id"
@@ -155,7 +160,7 @@ def test_cmd_device():
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -168,14 +173,14 @@ def test_cmd_domain():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "cancel"
-    assert isinstance(foo.target, openc2.DomainName)
+    assert isinstance(foo.target, openc2.v10.DomainName)
     assert foo.target.domain_name == "Domain name"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -188,14 +193,14 @@ def test_cmd_email():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "copy"
-    assert isinstance(foo.target, openc2.EmailAddress)
+    assert isinstance(foo.target, openc2.v10.EmailAddress)
     assert foo.target.email_addr == "Email address"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -213,14 +218,14 @@ def test_cmd_features():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "create"
-    assert isinstance(foo.target, openc2.Features)
+    assert isinstance(foo.target, openc2.v10.Features)
     assert foo.target.features == ["versions", "profiles", "pairs", "rate_limit"]
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -241,7 +246,7 @@ def test_cmd_file():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "delete"
-    assert isinstance(foo.target, openc2.File)
+    assert isinstance(foo.target, openc2.v10.File)
     assert foo.target.name == "File name"
     assert foo.target.path == "File path"
     assert foo.target.hashes
@@ -250,7 +255,7 @@ def test_cmd_file():
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -263,14 +268,14 @@ def test_cmd_idn():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "deny"
-    assert isinstance(foo.target, openc2.InternationalizedDomainName)
+    assert isinstance(foo.target, openc2.v10.InternationalizedDomainName)
     assert foo.target.idn_domain_name == "IDN Domain name"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
     gen = """{
@@ -281,14 +286,14 @@ def test_cmd_idn():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "detonate"
-    assert isinstance(foo.target, openc2.InternationalizedEmailAddress)
+    assert isinstance(foo.target, openc2.v10.InternationalizedEmailAddress)
     assert foo.target.idn_email_addr == "IDN Email address"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -308,7 +313,7 @@ def test_cmd_ip():
 """
     foo = openc2.parse(gen)
     assert foo.action == "investigate"
-    assert isinstance(foo.target, openc2.IPv4Connection)
+    assert isinstance(foo.target, openc2.v10.IPv4Connection)
     assert foo.target.src_addr == "10.0.0.0/24"
     assert foo.target.src_port == 8443
     assert foo.target.dst_addr == "10.0.0.0/24"
@@ -319,7 +324,7 @@ def test_cmd_ip():
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
     gen = """{
@@ -332,14 +337,14 @@ def test_cmd_ip():
 """
     foo = openc2.parse(gen)
     assert foo.action == "locate"
-    assert isinstance(foo.target, openc2.IPv4Address)
+    assert isinstance(foo.target, openc2.v10.IPv4Address)
     assert foo.target.ipv4_net == "10.0.0.0/24"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
     gen = """{
@@ -357,7 +362,7 @@ def test_cmd_ip():
 """
     foo = openc2.parse(gen)
     assert foo.action == "query"
-    assert isinstance(foo.target, openc2.IPv6Connection)
+    assert isinstance(foo.target, openc2.v10.IPv6Connection)
     assert foo.target.src_addr == "AE:00:E4:F1:04:65/24"
     assert foo.target.src_port == 8443
     assert foo.target.dst_addr == "AE:00:E4:F1:04:65/24"
@@ -368,7 +373,7 @@ def test_cmd_ip():
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
     gen = """{
@@ -380,14 +385,14 @@ def test_cmd_ip():
 """
     foo = openc2.parse(gen)
     assert foo.action == "locate"
-    assert isinstance(foo.target, openc2.IPv6Address)
+    assert isinstance(foo.target, openc2.v10.IPv6Address)
     assert foo.target.ipv6_net == "AE:00:E4:F1:04:65/24"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -401,14 +406,14 @@ def test_cmd_iri():
 """
     foo = openc2.parse(gen)
     assert foo.action == "remediate"
-    assert isinstance(foo.target, openc2.IRI)
+    assert isinstance(foo.target, openc2.v10.IRI)
     assert foo.target.iri == "My IRI identifier"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -422,14 +427,14 @@ def test_cmd_mac():
 """
     foo = openc2.parse(gen)
     assert foo.action == "restart"
-    assert isinstance(foo.target, openc2.MACAddress)
+    assert isinstance(foo.target, openc2.v10.MACAddress)
     assert foo.target.mac_addr == "VGhpcyBpcyBteSBtYWMgYWRkcmVzcw=="
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -462,7 +467,7 @@ def test_cmd_process():
 """
     foo = openc2.parse(gen)
     assert foo.action == "restore"
-    assert isinstance(foo.target, openc2.Process)
+    assert isinstance(foo.target, openc2.v10.Process)
     assert foo.target.pid == 12354
     assert foo.target.name == "Process name"
     assert foo.target.cwd == "Process CWD"
@@ -474,7 +479,7 @@ def test_cmd_process():
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -493,14 +498,14 @@ def test_cmd_properties():
 """
     foo = openc2.parse(gen)
     assert foo.action == "scan"
-    assert isinstance(foo.target, openc2.Properties)
+    assert isinstance(foo.target, openc2.v10.Properties)
     assert foo.target.properties == ["Tag1", "Tag2", "Tag3", "Tag4"]
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -513,14 +518,14 @@ def test_cmd_uri():
 }"""
     foo = openc2.parse(gen)
     assert foo.action == "set"
-    assert isinstance(foo.target, openc2.URI)
+    assert isinstance(foo.target, openc2.v10.URI)
     assert foo.target.uri == "www.myuri.com"
 
     bar = openc2.parse(foo.serialize())
     assert foo == bar
     bar = openc2.parse(json.loads(foo.serialize()))
     assert foo == bar
-    bar = openc2.Command(**json.loads(foo.serialize()))
+    bar = openc2.v10.Command(**json.loads(foo.serialize()))
     assert foo == bar
 
 
@@ -638,5 +643,5 @@ def test_cmd_generated():
         assert foo == bar
         bar = openc2.parse(json.loads(foo.serialize()))
         assert foo == bar
-        bar = openc2.Command(**json.loads(foo.serialize()))
+        bar = openc2.v10.Command(**json.loads(foo.serialize()))
         assert foo == bar
