@@ -69,7 +69,7 @@ def get_required_properties(properties):
     return (k for k, v in properties.items() if v.required)
 
 
-class _OpenC2Base(Mapping):
+class _OpenC2Base(Mapping, object):
     def object_properties(self):
         props = set(self._properties.keys())
         custom_props = list(set(self._inner.keys()) - props)
@@ -97,8 +97,6 @@ class _OpenC2Base(Mapping):
                 raise exceptions.InvalidValueError(
                     self.__class__, prop_name, str(exc)
                 ) from exc
-
-    # interproperty constraint methods
 
     def check_mutually_exclusive_properties(
         self, list_of_properties, at_least_one=True

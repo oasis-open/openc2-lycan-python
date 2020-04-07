@@ -18,6 +18,15 @@ def test_args_response_requested():
         openc2.v10.Args(response_requested="bad")
 
 
+def test_args_eq():
+    foo = openc2.v10.Args(response_requested="none")
+    bar = openc2.v10.Args(response_requested="none")
+    assert foo == bar
+
+    bar = openc2.v10.Args(response_requested="status")
+    assert foo != bar
+
+
 def test_args_property():
     foo = openc2.properties.ArgsProperty()
     assert foo.clean({"duration": 500})
