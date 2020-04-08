@@ -1,0 +1,8 @@
+exclude: '^(site_scons\/builders)|^(external)'
+fail_fast: true
+repos:
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    - id: black
+      language_version: python3
