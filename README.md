@@ -1,5 +1,5 @@
 # Lycan
-![Supported languages](https://img.shields.io/badge/python-2.7%2C%203.6-blue.svg)
+[![Python Support](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/)
 [![Build Status](https://travis-ci.org/oasis-open/openc2-lycan-python.svg)](https://travis-ci.org/open-oasis/openc2-lycan-python)
 [![Coverage Status](https://coveralls.io/repos/github/oasis-open/openc2-lycan-python/badge.svg)](https://coveralls.io/github/oasis-open/openc2-lycan-python)
 
