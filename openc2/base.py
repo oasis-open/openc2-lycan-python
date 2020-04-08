@@ -56,9 +56,9 @@ class OpenC2JSONEncoder(json.JSONEncoder):
         else:
             try:
                 # support stix2 objects even tho stix2 isn't a dependency
-                import stix2
+                from stix2.base import STIXJSONEncoder
 
-                return stix2.base.STIXJSONEncoder.default(self, obj)
+                return STIXJSONEncoder.default(self, obj)
             except:
                 pass
 
@@ -69,7 +69,7 @@ def get_required_properties(properties):
     return (k for k, v in properties.items() if v.required)
 
 
-class _OpenC2Base(Mapping, object):
+class _OpenC2Base(Mapping):
     def object_properties(self):
         props = set(self._properties.keys())
         custom_props = list(set(self._inner.keys()) - props)
