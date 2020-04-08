@@ -56,9 +56,9 @@ class OpenC2JSONEncoder(json.JSONEncoder):
         else:
             try:
                 # support stix2 objects even tho stix2 isn't a dependency
-                import stix2
+                from stix2.base import STIXJSONEncoder
 
-                return stix2.base.STIXJSONEncoder.default(self, obj)
+                return STIXJSONEncoder.default(self, obj)
             except:
                 pass
 
@@ -97,8 +97,6 @@ class _OpenC2Base(Mapping):
                 raise exceptions.InvalidValueError(
                     self.__class__, prop_name, str(exc)
                 ) from exc
-
-    # interproperty constraint methods
 
     def check_mutually_exclusive_properties(
         self, list_of_properties, at_least_one=True
