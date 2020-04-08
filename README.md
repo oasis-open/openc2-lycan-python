@@ -93,6 +93,7 @@ widget = AcmeWidgetActuator(name="foo", version=1.1)
 
 <ul>
 <li><a href="mailto:mstair@att.com">Michael Stair</a>; GitHub ID: <a href="https://github.com/mstair/">https://github.com/mstair/</a>; WWW: <a href="https://www.att.com/">AT&amp;T</a></li>
+<li><a href="mailto:zgorak@everwatchsolutions.com">Zachary Gorak</a>; GitHub ID: <a href="https://github.com/twodayslate/">https://github.com/twodayslate/</a>; WWW: <a href="https://everwatchsolutions.com/">EverWatch</a></li>
 </ul>
 
 </div>
